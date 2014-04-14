@@ -56,7 +56,7 @@ data_files += [
 setup(
     name="Electrum-Doge",
     version=version.ELECTRUM_VERSION,
-    install_requires=['slowaes', 'ecdsa>=0.9', 'doge_scrypt'],
+    install_requires=['slowaes', 'ecdsa>=0.9', 'ltc_scrypt'],
     package_dir={
         'electrum_doge': 'lib',
         'electrum_doge_gui': 'gui',
