@@ -17,8 +17,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 import sys, time, datetime, re, threading
-from electrum_ltc.i18n import _, set_language
-from electrum_ltc.util import print_error, print_msg
+from electrum_doge.i18n import _, set_language
+from electrum_doge.util import print_error, print_msg
 import os.path, json, ast, traceback
 import webbrowser
 import shutil
@@ -30,19 +30,19 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 import PyQt4.QtCore as QtCore
 
-from electrum_ltc.bitcoin import MIN_RELAY_TX_FEE, is_valid
-from electrum_ltc.plugins import run_hook
+from electrum_doge.bitcoin import MIN_RELAY_TX_FEE, is_valid
+from electrum_doge.plugins import run_hook
 
 import icons_rc
 
-from electrum_ltc.wallet import format_satoshis
-from electrum_ltc import Transaction
-from electrum_ltc import mnemonic
-from electrum_ltc import util, bitcoin, commands, Interface, Wallet
-from electrum_ltc import SimpleConfig, Wallet, WalletStorage
+from electrum_doge.wallet import format_satoshis
+from electrum_doge import Transaction
+from electrum_doge import mnemonic
+from electrum_doge import util, bitcoin, commands, Interface, Wallet
+from electrum_doge import SimpleConfig, Wallet, WalletStorage
 
 
-from electrum_ltc import bmp, pyqrnative
+from electrum_doge import bmp, pyqrnative
 
 from amountedit import AmountEdit
 from network_dialog import NetworkDialog
@@ -63,7 +63,7 @@ elif platform.system() == 'Darwin':
 else:
     MONOSPACE_FONT = 'monospace'
 
-from electrum_ltc import ELECTRUM_VERSION
+from electrum_doge import ELECTRUM_VERSION
 import re
 
 from util import *
@@ -164,7 +164,7 @@ class ElectrumWindow(QMainWindow):
         g = self.config.get("winpos-qt",[100, 100, 840, 400])
         self.setGeometry(g[0], g[1], g[2], g[3])
 
-        self.setWindowIcon(QIcon(":icons/electrum-ltc.png"))
+        self.setWindowIcon(QIcon(":icons/electrum-doge.png"))
         self.init_menubar()
 
         QShortcut(QKeySequence("Ctrl+W"), self, self.close)
@@ -257,12 +257,12 @@ class ElectrumWindow(QMainWindow):
 
 
     def load_wallet(self, wallet):
-        import electrum_ltc as electrum
+        import electrum_doge as electrum
         self.wallet = wallet
         self.accounts_expanded = self.wallet.storage.get('accounts_expanded',{})
         self.current_account = self.wallet.storage.get("current_account", None)
 
-        title = 'Electrum-LTC ' + self.wallet.electrum_version + '  -  ' + self.wallet.storage.path
+        title = 'Electrum-Doge ' + self.wallet.electrum_version + '  -  ' + self.wallet.storage.path
         if self.wallet.is_watching_only(): title += ' [%s]' % (_('watching only'))
         self.setWindowTitle( title )
         self.update_wallet()
@@ -476,7 +476,7 @@ class ElectrumWindow(QMainWindow):
 
     def base_unit(self):
         assert self.decimal_point in [5,8]
-        return "LTC" if self.decimal_point == 8 else "mLTC"
+        return "Doge" if self.decimal_point == 8 else "mDoge"
 
 
     def update_status(self):
@@ -956,7 +956,7 @@ class ElectrumWindow(QMainWindow):
             return
 
         try:
-            if amount and self.base_unit() == 'mLTC': amount = str( 1000* Decimal(amount))
+            if amount and self.base_unit() == 'mDoge': amount = str( 1000* Decimal(amount))
             elif amount: amount = str(Decimal(amount))
         except Exception:
             amount = "0.0"
@@ -1949,7 +1949,7 @@ class ElectrumWindow(QMainWindow):
             self.show_transaction(tx)
 
     def do_process_from_txid(self):
-        from electrum_ltc import transaction
+        from electrum_doge import transaction
         txid, ok = QInputDialog.getText(self, _('Lookup transaction'), _('Transaction ID') + ':')
         if ok and txid:
             r = self.network.synchronous_get([ ('blockchain.transaction.get',[str(txid)]) ])[0]
@@ -2130,7 +2130,7 @@ class ElectrumWindow(QMainWindow):
         lang_label=QLabel(_('Language') + ':')
         grid.addWidget(lang_label, 1, 0)
         lang_combo = QComboBox()
-        from electrum_ltc.i18n import languages
+        from electrum_doge.i18n import languages
         lang_combo.addItems(languages.values())
         try:
             index = languages.keys().index(self.config.get("language",''))
@@ -2154,7 +2154,7 @@ class ElectrumWindow(QMainWindow):
         if not self.config.is_modifiable('fee_per_kb'):
             for w in [fee_e, fee_label]: w.setEnabled(False)
 
-        units = ['LTC', 'mLTC']
+        units = ['Doge', 'mDoge']
         unit_label = QLabel(_('Base unit') + ':')
         grid.addWidget(unit_label, 3, 0)
         unit_combo = QComboBox()
@@ -2162,7 +2162,7 @@ class ElectrumWindow(QMainWindow):
         unit_combo.setCurrentIndex(units.index(self.base_unit()))
         grid.addWidget(unit_combo, 3, 1)
         grid.addWidget(HelpButton(_('Base unit of your wallet.')\
-                                             + '\n1LTC=1000mLTC.\n' \
+                                             + '\n1Doge=1000mDoge.\n' \
                                              + _(' These settings affects the fields in the Send tab')+' '), 3, 2)
 
         usechange_cb = QCheckBox(_('Use change addresses'))
@@ -2210,7 +2210,7 @@ class ElectrumWindow(QMainWindow):
 
         unit_result = units[unit_combo.currentIndex()]
         if self.base_unit() != unit_result:
-            self.decimal_point = 8 if unit_result == 'LTC' else 5
+            self.decimal_point = 8 if unit_result == 'Doge' else 5
             self.config.set_key('decimal_point', self.decimal_point, True)
             self.update_history_tab()
             self.update_status()
@@ -2244,7 +2244,7 @@ class ElectrumWindow(QMainWindow):
 
 
     def plugins_dialog(self):
-        from electrum_ltc.plugins import plugins
+        from electrum_doge.plugins import plugins
 
         d = QDialog(self)
         d.setWindowTitle(_('Electrum Plugins'))

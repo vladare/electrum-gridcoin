@@ -13,25 +13,25 @@ except ImportError:
     sys.exit(0)
 
 from decimal import Decimal as D
-from electrum_ltc.util import get_resource_path as rsrc
-from electrum_ltc.bitcoin import is_valid
-from electrum_ltc.i18n import _
+from electrum_doge.util import get_resource_path as rsrc
+from electrum_doge.bitcoin import is_valid
+from electrum_doge.i18n import _
 import decimal
 import json
 import os.path
 import random
 import re
 import time
-from electrum_ltc.wallet import Wallet, WalletStorage
+from electrum_doge.wallet import Wallet, WalletStorage
 import webbrowser
 import history_widget
 import receiving_widget
-from electrum_ltc import util
+from electrum_doge import util
 import csv
 import datetime
 
-from electrum_ltc.version import ELECTRUM_VERSION as electrum_version
-from electrum_ltc.util import format_satoshis, age
+from electrum_doge.version import ELECTRUM_VERSION as electrum_version
+from electrum_doge.util import format_satoshis, age
 
 from main_window import ElectrumWindow
 import shutil
@@ -86,7 +86,7 @@ def load_theme_paths():
 def csv_transaction(wallet):
     try:
         select_export = _('Select file to export your wallet transactions to')
-        fileName = QFileDialog.getSaveFileName(QWidget(), select_export, os.path.expanduser('~/electrum-ltc-history.csv'), "*.csv")
+        fileName = QFileDialog.getSaveFileName(QWidget(), select_export, os.path.expanduser('~/electrum-doge-history.csv'), "*.csv")
         if fileName:
             with open(fileName, "w+") as csvfile:
                 transaction = csv.writer(csvfile)
@@ -430,7 +430,7 @@ class MiniWindow(QDialog):
     def create_quote_text(self, btc_balance):
         """Return a string copy of the amount fiat currency the 
         user has in bitcoins."""
-        from electrum_ltc.plugins import run_hook
+        from electrum_doge.plugins import run_hook
         r = {}
         run_hook('get_fiat_balance_text', btc_balance, r)
         return r.get(0,'')

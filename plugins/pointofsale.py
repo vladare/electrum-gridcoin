@@ -8,10 +8,10 @@ from PyQt4.QtCore import *
 import PyQt4.QtCore as QtCore
 import PyQt4.QtGui as QtGui
 
-from electrum_ltc_gui.qt.qrcodewidget import QRCodeWidget
+from electrum_doge_gui.qt.qrcodewidget import QRCodeWidget
 
-from electrum_ltc import bmp, pyqrnative, BasePlugin
-from electrum_ltc.i18n import _
+from electrum_doge import bmp, pyqrnative, BasePlugin
+from electrum_doge.i18n import _
 
 
 if platform.system() == 'Windows':
@@ -62,7 +62,7 @@ class QR_Window(QWidget):
         address_text = "<span style='font-size: 18pt'>%s</span>" % addr if addr else ""
         self.address_label.setText(address_text)
 
-        if currency == 'LTC': currency = None
+        if currency == 'Doge': currency = None
         amount_text = ''
         if amount:
             if currency:
@@ -76,7 +76,7 @@ class QR_Window(QWidget):
 
             if currency:
                 amount_text += "<span style='font-size: 18pt'>%s %s</span><br/>" % (amount, currency)
-            amount_text += "<span style='font-size: 21pt'>%s</span> <span style='font-size: 16pt'>LTC</span> " % str(self.amount) 
+            amount_text += "<span style='font-size: 21pt'>%s</span> <span style='font-size: 16pt'>Doge</span> " % str(self.amount) 
         else:
             self.amount = None
             
@@ -216,12 +216,12 @@ class Plugin(BasePlugin):
 
         text = text.strip().upper()
         #print text
-        m = re.match('^(\d*(|\.\d*))\s*(|LTC|EUR|USD|GBP|CNY|JPY|RUB|BRL)$', text)
+        m = re.match('^(\d*(|\.\d*))\s*(|Doge|EUR|USD|GBP|CNY|JPY|RUB|BRL)$', text)
         if m and m.group(1) and m.group(1)!='.':
             amount = m.group(1)
             currency = m.group(3)
             if not currency:
-                currency = 'LTC'
+                currency = 'Doge'
             else:
                 currency = currency.upper()
                     

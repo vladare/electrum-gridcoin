@@ -22,9 +22,9 @@ from util import user_dir, appdata_dir, print_error, print_msg
 from bitcoin import *
 
 try:
-    from ltc_scrypt import getPoWHash
+    from doge_scrypt import getPoWHash
 except ImportError:
-    print_msg("Warning: ltc_scrypt not available, using fallback")
+    print_msg("Warning: doge_scrypt not available, using fallback")
     from scrypt import scrypt_1024_1_1_80 as getPoWHash
 
 
@@ -38,7 +38,7 @@ class Blockchain(threading.Thread):
         self.lock = threading.Lock()
         self.local_height = 0
         self.running = False
-        self.headers_url = 'http://headers.electrum-ltc.org/blockchain_headers'
+        self.headers_url = 'http://headers.electrum-doge.org/blockchain_headers'
         self.set_local_height()
         self.queue = Queue.Queue()
 
