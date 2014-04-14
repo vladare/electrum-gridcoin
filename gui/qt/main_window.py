@@ -124,7 +124,7 @@ class ElectrumWindow(QMainWindow):
         self.network = network
 
         self._close_electrum = False
-        self.lite = None
+        self.doge = None
 
         if sys.platform == 'darwin':
           self.icon = QIcon(":icons/electrum_dark_icon.png")
@@ -196,45 +196,45 @@ class ElectrumWindow(QMainWindow):
             self.console.showMessage(self.network.banner)
 
         self.wallet = None
-        self.init_lite()
+        self.init_doge()
 
 
     def go_full(self):
-        self.config.set_key('lite_mode', False, True)
+        self.config.set_key('doge_mode', False, True)
         self.mini.hide()
         self.show()
         self.raise_()
 
-    def go_lite(self):
-        self.config.set_key('lite_mode', True, True)
+    def go_doge(self):
+        self.config.set_key('doge_mode', True, True)
         self.hide()
         self.mini.show()
         self.mini.raise_()
 
 
-    def init_lite(self):
-        import lite_window
+    def init_doge(self):
+        import doge_window
         if not self.check_qt_version():
-            if self.config.get('lite_mode') is True:
-                msg = "Electrum was unable to load the 'Lite GUI' because it needs Qt version >= 4.7.\nChanging your config to use the 'Classic' GUI"
-                QMessageBox.warning(None, "Could not start Lite GUI.", msg)
-                self.config.set_key('lite_mode', False, True)
+            if self.config.get('doge_mode') is True:
+                msg = "Electrum was unable to load the 'Doge GUI' because it needs Qt version >= 4.7.\nChanging your config to use the 'Classic' GUI"
+                QMessageBox.warning(None, "Could not start Doge GUI.", msg)
+                self.config.set_key('doge_mode', False, True)
                 sys.exit(0)
             self.mini = None
             self.show()
             self.raise_()
             return
 
-        actuator = lite_window.MiniActuator(self)
+        actuator = doge_window.MiniActuator(self)
 
         actuator.load_theme()
 
-        self.mini = lite_window.MiniWindow(actuator, self.go_full, self.config)
+        self.mini = doge_window.MiniWindow(actuator, self.go_full, self.config)
 
-        driver = lite_window.MiniDriver(self, self.mini)
+        driver = doge_window.MiniDriver(self, self.mini)
 
-        if self.config.get('lite_mode') is True:
-            self.go_lite()
+        if self.config.get('doge_mode') is True:
+            self.go_doge()
         else:
             self.go_full()
 
@@ -388,16 +388,16 @@ class ElectrumWindow(QMainWindow):
 
         help_menu = menubar.addMenu(_("&Help"))
         help_menu.addAction(_("&About"), self.show_about)
-        help_menu.addAction(_("&Official website"), lambda: webbrowser.open("http://electrum.org"))
+        help_menu.addAction(_("&Official website"), lambda: webbrowser.open("http://electrum-doge.org"))
         help_menu.addSeparator()
-        help_menu.addAction(_("&Documentation"), lambda: webbrowser.open("http://electrum.org/documentation.html")).setShortcut(QKeySequence.HelpContents)
+        help_menu.addAction(_("&Documentation"), lambda: webbrowser.open("http://electrum-doge.org/documentation.html")).setShortcut(QKeySequence.HelpContents)
         help_menu.addAction(_("&Report Bug"), self.show_report_bug)
 
         self.setMenuBar(menubar)
 
     def show_about(self):
         QMessageBox.about(self, "Electrum",
-            _("Version")+" %s" % (self.wallet.electrum_version) + "\n\n" + _("Electrum's focus is speed, with low resource usage and simplifying Litecoin. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of the Litecoin system."))
+            _("Version")+" %s" % (self.wallet.electrum_version) + "\n\n" + _("Electrum's focus is speed, with low resource usage and simplifying Dogecoin. You do not need to perform regular backups, because your wallet can be recovered from a secret phrase that you can memorize or write on paper. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of the Dogecoin system."))
 
     def show_report_bug(self):
         QMessageBox.information(self, "Electrum - " + _("Reporting Bugs"),
@@ -545,8 +545,7 @@ class ElectrumWindow(QMainWindow):
         menu.addAction(_("Copy ID to Clipboard"), lambda: self.app.clipboard().setText(tx_hash))
         menu.addAction(_("Details"), lambda: self.show_transaction(self.wallet.transactions.get(tx_hash)))
         menu.addAction(_("Edit description"), lambda: self.tx_label_clicked(item,2))
-        menu.addAction(_("View on explorer.litecoin.net"), lambda: webbrowser.open("http://explorer.litecoin.net/tx/" + tx_hash))
-        menu.addAction(_("View on block-explorer.com"), lambda: webbrowser.open("http://block-explorer.com/tx/" + tx_hash))
+        menu.addAction(_("View on Dogechain.info"), lambda: webbrowser.open("https://dogechain.info/tx/" + tx_hash))
         menu.exec_(self.contacts_list.viewport().mapToGlobal(position))
 
 
@@ -693,7 +692,7 @@ class ElectrumWindow(QMainWindow):
         grid.addWidget(QLabel(_('Pay to')), 1, 0)
         grid.addWidget(self.payto_e, 1, 1, 1, 3)
 
-        grid.addWidget(HelpButton(_('Recipient of the funds.') + '\n\n' + _('You may enter a Litecoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Litecoin address)')), 1, 4)
+        grid.addWidget(HelpButton(_('Recipient of the funds.') + '\n\n' + _('You may enter a Dogecoin address, a label from your list of contacts (a list of completions will be proposed), or an alias (email-like address that forwards to a Dogecoin address)')), 1, 4)
 
         completer = QCompleter()
         completer.setCaseSensitivity(False)
@@ -728,7 +727,7 @@ class ElectrumWindow(QMainWindow):
         grid.addWidget(QLabel(_('Fee')), 5, 0)
         grid.addWidget(self.fee_e, 5, 1, 1, 2)
         grid.addWidget(HelpButton(
-                _('Litecoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
+                _('Dogecoin transactions are in general not free. A transaction fee is paid by the sender of the funds.') + '\n\n'\
                     + _('The amount of fee can be decided freely by the sender. However, transactions with low fees take more time to be processed.') + '\n\n'\
                     + _('A suggested fee is automatically added to this field. You may override it. The suggested fee increases with the size of the transaction.')), 5, 3)
 
@@ -836,7 +835,7 @@ class ElectrumWindow(QMainWindow):
         to_address = m.group(2) if m else r
 
         if not is_valid(to_address):
-            QMessageBox.warning(self, _('Error'), _('Invalid Litecoin Address') + ':\n' + to_address, _('OK'))
+            QMessageBox.warning(self, _('Error'), _('Invalid Dogecoin Address') + ':\n' + to_address, _('OK'))
             return
 
         try:
@@ -855,7 +854,7 @@ class ElectrumWindow(QMainWindow):
             if not self.question(_("send %(amount)s to %(address)s?")%{ 'amount' : self.format_amount(amount) + ' '+ self.base_unit(), 'address' : to_address}):
                 return
             
-        confirm_fee = self.config.get('confirm_fee', 1000000)
+        confirm_fee = self.config.get('confirm_fee', 10000000)
         if fee >= confirm_fee:
             if not self.question(_("The fee for this transaction seems unusually high.\nAre you really sure you want to pay %(fee)s in fees?")%{ 'fee' : self.format_amount(fee) + ' '+ self.base_unit()}):
                 return
@@ -952,7 +951,7 @@ class ElectrumWindow(QMainWindow):
         try:
             address, amount, label, message, signature, identity, url = util.parse_url(url)
         except Exception:
-            QMessageBox.warning(self, _('Error'), _('Invalid litecoin URL'), _('OK'))
+            QMessageBox.warning(self, _('Error'), _('Invalid Dogecoin URL'), _('OK'))
             return
 
         try:
@@ -986,7 +985,7 @@ class ElectrumWindow(QMainWindow):
             self.set_frozen(self.payto_e,True)
             self.set_frozen(self.amount_e,True)
             self.set_frozen(self.message_e,True)
-            self.payto_sig.setText( '      '+_('The litecoin URI was signed by')+' ' + identity )
+            self.payto_sig.setText( '      '+_('The Dogecoin URI was signed by')+' ' + identity )
         else:
             self.payto_sig.setVisible(False)
 
@@ -1154,7 +1153,7 @@ class ElectrumWindow(QMainWindow):
         menu = QMenu()
         if not multi_select:
             menu.addAction(_("Copy to clipboard"), lambda: self.app.clipboard().setText(addr))
-            menu.addAction(_("QR code"), lambda: self.show_qrcode("litecoin:" + addr, _("Address")) )
+            menu.addAction(_("QR code"), lambda: self.show_qrcode("dogecoin:" + addr, _("Address")) )
             menu.addAction(_("Edit label"), lambda: self.edit_label(True))
             menu.addAction(_("Public keys"), lambda: self.show_public_keys(addr))
             if self.wallet.seed:
@@ -1222,7 +1221,7 @@ class ElectrumWindow(QMainWindow):
             payto_addr = item.data(0,33).toString()
             menu.addAction(_("Copy to Clipboard"), lambda: self.app.clipboard().setText(addr))
             menu.addAction(_("Pay to"), lambda: self.payto(payto_addr))
-            menu.addAction(_("QR code"), lambda: self.show_qrcode("litecoin:" + addr, _("Address")))
+            menu.addAction(_("QR code"), lambda: self.show_qrcode("dogecoin:" + addr, _("Address")))
             if is_editable:
                 menu.addAction(_("Edit label"), lambda: self.edit_label(False))
                 menu.addAction(_("Delete"), lambda: self.delete_contact(addr))
@@ -1416,7 +1415,7 @@ class ElectrumWindow(QMainWindow):
         sb.addPermanentWidget(self.account_selector)
 
         if (int(qtVersion[0]) >= 4 and int(qtVersion[2]) >= 7):
-            sb.addPermanentWidget( StatusBarButton( QIcon(":icons/switchgui.png"), _("Switch to Lite Mode"), self.go_lite ) )
+            sb.addPermanentWidget( StatusBarButton( QIcon(":icons/switchgui.png"), _("Switch to Doge Mode"), self.go_doge ) )
 
         self.lock_icon = QIcon()
         self.password_button = StatusBarButton( self.lock_icon, _("Password"), self.change_password_dialog )
@@ -1505,7 +1504,7 @@ class ElectrumWindow(QMainWindow):
         vbox.addWidget(QLabel(_('Account name')+':'))
         e = QLineEdit()
         vbox.addWidget(e)
-        msg = _("Note: Newly created accounts are 'pending' until they receive litecoins.") + " " \
+        msg = _("Note: Newly created accounts are 'pending' until they receive dogecoins.") + " " \
             + _("You will need to wait for 2 confirmations until the correct balance is displayed and more addresses are created for that account.")
         l = QLabel(msg)
         l.setWordWrap(True)
@@ -2073,7 +2072,7 @@ class ElectrumWindow(QMainWindow):
 
 
     def do_export_history(self):
-        from lite_window import csv_transaction
+        from doge_window import csv_transaction
         csv_transaction(self.wallet)
 
 
@@ -2149,7 +2148,7 @@ class ElectrumWindow(QMainWindow):
         fee_e.setText(self.format_amount(self.wallet.fee).strip())
         grid.addWidget(fee_e, 2, 1)
         msg = _('Fee per kilobyte of transaction.') + ' ' \
-            + _('Recommended value') + ': ' + self.format_amount(100000)
+            + _('Recommended value') + ': ' + self.format_amount(100000000)
         grid.addWidget(HelpButton(msg), 2, 2)
         if not self.config.is_modifiable('fee_per_kb'):
             for w in [fee_e, fee_label]: w.setEnabled(False)

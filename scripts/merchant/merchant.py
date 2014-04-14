@@ -20,7 +20,7 @@
 import time, thread, sys, socket, os
 import urllib2,json
 import Queue
-import sqlite3
+import sqdoge3
 from electrum_doge import Wallet, WalletStorage, SimpleConfig, Network, set_verbosity
 set_verbosity(False)
 
@@ -32,7 +32,7 @@ my_password = config.get('main','password')
 my_host = config.get('main','host')
 my_port = config.getint('main','port')
 
-database = config.get('sqlite3','database')
+database = config.get('sqdoge3','database')
 
 received_url = config.get('callback','received')
 expired_url = config.get('callback','expired')
@@ -50,7 +50,7 @@ num = 0
 def check_create_table(conn):
     global num
     c = conn.cursor()
-    c.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='electrum_payments';")
+    c.execute("SELECT name FROM sqdoge_master WHERE type='table' AND name='electrum_payments';")
     data = c.fetchall()
     if not data: 
         c.execute("""CREATE TABLE electrum_payments (address VARCHAR(40), amount FLOAT, confirmations INT(8), received_at TIMESTAMP, expires_at TIMESTAMP, paid INT(1), processed INT(1));""")
@@ -153,7 +153,7 @@ if __name__ == '__main__':
         ret = send_command(cmd, params)
         sys.exit(ret)
 
-    conn = sqlite3.connect(database);
+    conn = sqdoge3.connect(database);
     # create table if needed
     check_create_table(conn)
 

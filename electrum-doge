@@ -72,7 +72,7 @@ def arg_parser():
     usage = "%prog [options] command"
     parser = optparse.OptionParser(prog=usage, add_help_option=False)
     parser.add_option("-h", "--help", action="callback", callback=print_help_cb, help="show this help text")
-    parser.add_option("-g", "--gui", dest="gui", help="User interface: qt, lite, gtk, text or stdio")
+    parser.add_option("-g", "--gui", dest="gui", help="User interface: qt, doge, gtk, text or stdio")
     parser.add_option("-w", "--wallet", dest="wallet_path", help="wallet path (default: electrum-doge.dat)")
     parser.add_option("-o", "--offline", action="store_true", dest="offline", default=False, help="remain offline")
     parser.add_option("-C", "--concealed", action="store_true", dest="concealed", default=False, help="don't echo seed to console when restoring")
@@ -177,7 +177,7 @@ if __name__ == '__main__':
     if len(args) == 0:
         url = None
         cmd = 'gui'
-    elif len(args) == 1 and re.match('^litecoin:', args[0]):
+    elif len(args) == 1 and re.match('^dogecoin:', args[0]):
         url = args[0]
         cmd = 'gui'
     else:
@@ -185,7 +185,7 @@ if __name__ == '__main__':
 
     if cmd == 'gui':
         gui_name = config.get('gui', 'classic')
-        if gui_name in ['lite', 'classic']:
+        if gui_name in ['doge', 'classic']:
             gui_name = 'qt'
         try:
             gui = __import__('electrum_doge_gui.' + gui_name, fromlist=['electrum_doge_gui'])
@@ -415,7 +415,7 @@ if __name__ == '__main__':
     elif cmd.name == 'setconfig':
         key, value = args[1:3]
         try:
-            value = ast.literal_eval(value)
+            value = ast.dogeral_eval(value)
         except:
             pass
         config.set_key(key, value, True)

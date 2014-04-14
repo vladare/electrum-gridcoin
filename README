@@ -1,9 +1,9 @@
-Electrum - lightweight Litecoin client
+Electrum-Doge - lightweight Dogecoin client
 
 Licence: GNU GPL v3
 Author: thomasv@bitcointalk.org
 Language: Python
-Homepage: http://electrum.org/
+Homepage: http://electrum-doge.org/
 
 
 == INSTALL ==
@@ -42,4 +42,4 @@ On Mac OS X:
 
 == BROWSER CONFIGURATION ==
 
-See http://electrum.org/bitcoin_URIs.html
+See http://electrum-doge.org/bitcoin_URIs.html

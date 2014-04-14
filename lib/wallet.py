@@ -118,7 +118,7 @@ class WalletStorage:
         except IOError:
             return
         try:
-            d = ast.literal_eval( data )  #parse raw data from reading wallet file
+            d = ast.dogeral_eval( data )  #parse raw data from reading wallet file
         except Exception:
             raise IOError("Cannot read wallet file.")
 
@@ -177,7 +177,7 @@ class NewWallet:
         self.imported_keys         = storage.get('imported_keys',{})
         self.history               = storage.get('addr_history',{})        # address -> list(txid, height)
 
-        self.fee                   = int(storage.get('fee_per_kb',100000))
+        self.fee                   = int(storage.get('fee_per_kb',100000000))
 
         self.master_public_keys = storage.get('master_public_keys',{})
         self.master_private_keys = storage.get('master_private_keys', {})

@@ -188,7 +188,7 @@ class MiniWindow(QDialog):
 
         # Bitcoin address code
         self.address_input = QLineEdit()
-        self.address_input.setPlaceholderText(_("Enter a Litecoin address or contact"))
+        self.address_input.setPlaceholderText(_("Enter a Dogecoin address or contact"))
         self.address_input.setObjectName("address_input")
 
         self.address_input.setFocusPolicy(Qt.ClickFocus)
@@ -291,7 +291,7 @@ class MiniWindow(QDialog):
         close_shortcut = QShortcut(QKeySequence("Ctrl+W"), self)
         close_shortcut.activated.connect(self.close)
 
-        g = self.config.get("winpos-lite",[4, 25, 351, 149])
+        g = self.config.get("winpos-doge",[4, 25, 351, 149])
         self.setGeometry(g[0], g[1], g[2], g[3])
 
         show_hist = self.config.get("gui_show_history",False)
@@ -350,7 +350,7 @@ class MiniWindow(QDialog):
 
     def closeEvent(self, event):
         g = self.geometry()
-        self.config.set_key("winpos-lite", [g.left(),g.top(),g.width(),g.height()],True)
+        self.config.set_key("winpos-doge", [g.left(),g.top(),g.width(),g.height()],True)
         self.actuator.g.closeEvent(event)
         qApp.quit()
 
@@ -501,7 +501,7 @@ class MiniWindow(QDialog):
 
 
     def the_website(self):
-        webbrowser.open("http://electrum.org")
+        webbrowser.open("http://electrum-doge.org")
 
 
     def toggle_receiving_layout(self, toggle_state):
@@ -617,7 +617,7 @@ class ReceivePopup(QDialog):
         self.close()
 
     def setup(self, address):
-        label = QLabel(_("Copied your Litecoin address to the clipboard!"))
+        label = QLabel(_("Copied your Dogecoin address to the clipboard!"))
         address_display = QLineEdit(address)
         address_display.setReadOnly(True)
         resize_line_edit_width(address_display, address)
@@ -627,7 +627,7 @@ class ReceivePopup(QDialog):
         main_layout.addWidget(address_display)
 
         self.setMouseTracking(True)
-        self.setWindowTitle("Electrum - " + _("Receive Litecoin payment"))
+        self.setWindowTitle("Electrum - " + _("Receive Dogecoin payment"))
         self.setWindowFlags(Qt.Window|Qt.FramelessWindowHint|
                             Qt.MSWindowsFixedSizeDialogHint)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
@@ -650,7 +650,7 @@ class MiniActuator:
     def __init__(self, main_window):
         """Retrieve the gui theme used in previous session."""
         self.g = main_window
-        self.theme_name = self.g.config.get('litegui_theme','Cleanlook')
+        self.theme_name = self.g.config.get('dogegui_theme','Cleanlook')
         self.themes = load_theme_paths()
         self.load_theme()
 
@@ -676,7 +676,7 @@ class MiniActuator:
     def change_theme(self, theme_name):
         """Change theme."""
         self.theme_name = theme_name
-        self.g.config.set_key('litegui_theme',theme_name)
+        self.g.config.set_key('dogegui_theme',theme_name)
         self.load_theme()
    
     def set_configured_exchange(self, set_exchange):
@@ -739,7 +739,7 @@ class MiniActuator:
 
         if dest_address is None or not is_valid(dest_address):
             QMessageBox.warning(parent_window, _('Error'), 
-                _('Invalid Litecoin Address') + ':\n' + address, _('OK'))
+                _('Invalid Dogecoin Address') + ':\n' + address, _('OK'))
             return False
 
         amount = D(unicode(amount)) * (10*self.g.decimal_point)

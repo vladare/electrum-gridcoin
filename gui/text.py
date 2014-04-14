@@ -287,7 +287,7 @@ class ElectrumGui:
 
     def do_send(self):
         if not is_valid(self.str_recipient):
-            self.show_message(_('Invalid Litecoin address'))
+            self.show_message(_('Invalid Dogecoin address'))
             return
         try:
             amount = int( Decimal( self.str_amount) * 100000000 )
@@ -375,7 +375,7 @@ class ElectrumGui:
 
     def settings_dialog(self):
         out = self.run_dialog('Settings', [
-            {'label':'Default GUI', 'type':'list', 'choices':['classic','lite','gtk','text'], 'value':self.config.get('gui')},
+            {'label':'Default GUI', 'type':'list', 'choices':['classic','doge','gtk','text'], 'value':self.config.get('gui')},
             {'label':'Default fee', 'type':'satoshis', 'value': format_satoshis(self.wallet.fee).strip() }
             ], buttons = 1)
         if out:

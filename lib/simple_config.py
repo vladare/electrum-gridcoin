@@ -101,7 +101,7 @@ a SimpleConfig instance then reads the wallet file.
         if default is not None and type(out) != type(default):
             import ast
             try:
-                out = ast.literal_eval(out)
+                out = ast.dogeral_eval(out)
             except Exception:
                 print "type error for '%s': using default value"%key
                 out = default
@@ -152,7 +152,7 @@ a SimpleConfig instance then reads the wallet file.
             except IOError:
                 return
             try:
-                d = ast.literal_eval( data )  #parse raw data from reading wallet file
+                d = ast.dogeral_eval( data )  #parse raw data from reading wallet file
             except Exception:
                 raise IOError("Cannot read config file.")
 

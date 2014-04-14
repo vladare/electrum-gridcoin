@@ -94,7 +94,7 @@ setup(
         'electrum_doge_gui.qt.history_widget',
         'electrum_doge_gui.qt.icons_rc',
         'electrum_doge_gui.qt.installwizard',
-        'electrum_doge_gui.qt.lite_window',
+        'electrum_doge_gui.qt.doge_window',
         'electrum_doge_gui.qt.main_window',
         'electrum_doge_gui.qt.network_dialog',
         'electrum_doge_gui.qt.password_dialog',
@@ -113,10 +113,10 @@ setup(
         'electrum_doge_plugins.qrscanner',
         'electrum_doge_plugins.virtualkeyboard',
     ],
-    description="Lightweight Litecoin Wallet",
-    author="ecdsa",
-    author_email="ecdsa@github",
+    description="Lightweight Dogecoin Wallet",
+    author="paybee",
+    author_email="paybee@github",
     license="GNU GPLv3",
-    url="http://electrum.org",
-    long_description="""Lightweight Litecoin Wallet"""
+    url="http://electrum-doge.org",
+    long_description="""Lightweight Dogecoin Wallet"""
 )
