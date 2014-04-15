@@ -118,7 +118,7 @@ class WalletStorage:
         except IOError:
             return
         try:
-            d = ast.dogeral_eval( data )  #parse raw data from reading wallet file
+            d = ast.literal_eval( data )  #parse raw data from reading wallet file
         except Exception:
             raise IOError("Cannot read wallet file.")
 
