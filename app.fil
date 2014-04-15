@@ -1,6 +1,6 @@
 gui/gtk.py
 gui/qt/main_window.py
-gui/qt/doge_window.py
+gui/qt/lite_window.py
 gui/qt/history_widget.py
 gui/qt/installwizard.py
 gui/qt/network_dialog.py
