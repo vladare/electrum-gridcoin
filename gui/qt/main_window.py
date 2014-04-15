@@ -213,7 +213,7 @@ class ElectrumWindow(QMainWindow):
 
 
     def init_doge(self):
-        import doge_window
+        import lite_window
         if not self.check_qt_version():
             if self.config.get('doge_mode') is True:
                 msg = "Electrum was unable to load the 'Doge GUI' because it needs Qt version >= 4.7.\nChanging your config to use the 'Classic' GUI"
@@ -225,13 +225,13 @@ class ElectrumWindow(QMainWindow):
             self.raise_()
             return
 
-        actuator = doge_window.MiniActuator(self)
+        actuator = lite_window.MiniActuator(self)
 
         actuator.load_theme()
 
-        self.mini = doge_window.MiniWindow(actuator, self.go_full, self.config)
+        self.mini = lite_window.MiniWindow(actuator, self.go_full, self.config)
 
-        driver = doge_window.MiniDriver(self, self.mini)
+        driver = lite_window.MiniDriver(self, self.mini)
 
         if self.config.get('doge_mode') is True:
             self.go_doge()
@@ -2072,7 +2072,7 @@ class ElectrumWindow(QMainWindow):
 
 
     def do_export_history(self):
-        from doge_window import csv_transaction
+        from lite_window import csv_transaction
         csv_transaction(self.wallet)
 
 

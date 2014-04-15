@@ -94,7 +94,7 @@ setup(
         'electrum_doge_gui.qt.history_widget',
         'electrum_doge_gui.qt.icons_rc',
         'electrum_doge_gui.qt.installwizard',
-        'electrum_doge_gui.qt.doge_window',
+        'electrum_doge_gui.qt.lite_window',
         'electrum_doge_gui.qt.main_window',
         'electrum_doge_gui.qt.network_dialog',
         'electrum_doge_gui.qt.password_dialog',
