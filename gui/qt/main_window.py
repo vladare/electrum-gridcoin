@@ -200,13 +200,13 @@ class ElectrumWindow(QMainWindow):
 
 
     def go_full(self):
-        self.config.set_key('doge_mode', False, True)
+        self.config.set_key('lite_mode', False, True)
         self.mini.hide()
         self.show()
         self.raise_()
 
     def go_doge(self):
-        self.config.set_key('doge_mode', True, True)
+        self.config.set_key('lite_mode', True, True)
         self.hide()
         self.mini.show()
         self.mini.raise_()
@@ -215,10 +215,10 @@ class ElectrumWindow(QMainWindow):
     def init_doge(self):
         import lite_window
         if not self.check_qt_version():
-            if self.config.get('doge_mode') is True:
+            if self.config.get('lite_mode') is True:
                 msg = "Electrum was unable to load the 'Doge GUI' because it needs Qt version >= 4.7.\nChanging your config to use the 'Classic' GUI"
                 QMessageBox.warning(None, "Could not start Doge GUI.", msg)
-                self.config.set_key('doge_mode', False, True)
+                self.config.set_key('lite_mode', False, True)
                 sys.exit(0)
             self.mini = None
             self.show()
@@ -233,7 +233,7 @@ class ElectrumWindow(QMainWindow):
 
         driver = lite_window.MiniDriver(self, self.mini)
 
-        if self.config.get('doge_mode') is True:
+        if self.config.get('lite_mode') is True:
             self.go_doge()
         else:
             self.go_full()
