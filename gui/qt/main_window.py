@@ -124,7 +124,7 @@ class ElectrumWindow(QMainWindow):
         self.network = network
 
         self._close_electrum = False
-        self.doge = None
+        self.lite = None
 
         if sys.platform == 'darwin':
           self.icon = QIcon(":icons/electrum_dark_icon.png")
@@ -216,8 +216,8 @@ class ElectrumWindow(QMainWindow):
         import lite_window
         if not self.check_qt_version():
             if self.config.get('lite_mode') is True:
-                msg = "Electrum was unable to load the 'Doge GUI' because it needs Qt version >= 4.7.\nChanging your config to use the 'Classic' GUI"
-                QMessageBox.warning(None, "Could not start Doge GUI.", msg)
+                msg = "Electrum was unable to load the 'Lite GUI' because it needs Qt version >= 4.7.\nChanging your config to use the 'Classic' GUI"
+                QMessageBox.warning(None, "Could not start Lite GUI.", msg)
                 self.config.set_key('lite_mode', False, True)
                 sys.exit(0)
             self.mini = None
@@ -1415,7 +1415,7 @@ class ElectrumWindow(QMainWindow):
         sb.addPermanentWidget(self.account_selector)
 
         if (int(qtVersion[0]) >= 4 and int(qtVersion[2]) >= 7):
-            sb.addPermanentWidget( StatusBarButton( QIcon(":icons/switchgui.png"), _("Switch to Doge Mode"), self.go_doge ) )
+            sb.addPermanentWidget( StatusBarButton( QIcon(":icons/switchgui.png"), _("Switch to Lite Mode"), self.go_doge ) )
 
         self.lock_icon = QIcon()
         self.password_button = StatusBarButton( self.lock_icon, _("Password"), self.change_password_dialog )
