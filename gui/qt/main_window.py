@@ -205,7 +205,7 @@ class ElectrumWindow(QMainWindow):
         self.show()
         self.raise_()
 
-    def go_doge(self):
+    def go_lite(self):
         self.config.set_key('lite_mode', True, True)
         self.hide()
         self.mini.show()
@@ -234,7 +234,7 @@ class ElectrumWindow(QMainWindow):
         driver = lite_window.MiniDriver(self, self.mini)
 
         if self.config.get('lite_mode') is True:
-            self.go_doge()
+            self.go_lite()
         else:
             self.go_full()
 
@@ -1415,7 +1415,7 @@ class ElectrumWindow(QMainWindow):
         sb.addPermanentWidget(self.account_selector)
 
         if (int(qtVersion[0]) >= 4 and int(qtVersion[2]) >= 7):
-            sb.addPermanentWidget( StatusBarButton( QIcon(":icons/switchgui.png"), _("Switch to Lite Mode"), self.go_doge ) )
+            sb.addPermanentWidget( StatusBarButton( QIcon(":icons/switchgui.png"), _("Switch to Lite Mode"), self.go_lite ) )
 
         self.lock_icon = QIcon()
         self.password_button = StatusBarButton( self.lock_icon, _("Password"), self.change_password_dialog )

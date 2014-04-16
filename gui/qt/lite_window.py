@@ -299,7 +299,7 @@ class MiniWindow(QDialog):
         show_hist = self.config.get("gui_show_receiving",False)
         self.toggle_receiving_layout(show_hist)
         
-        self.setWindowIcon(QIcon(":icons/electrum.png"))
+        self.setWindowIcon(QIcon(":icons/electrum-doge.png"))
         self.setWindowTitle("Electrum")
         self.setWindowFlags(Qt.Window|Qt.MSWindowsFixedSizeDialogHint)
         self.layout().setSizeConstraint(QLayout.SetFixedSize)
@@ -650,7 +650,7 @@ class MiniActuator:
     def __init__(self, main_window):
         """Retrieve the gui theme used in previous session."""
         self.g = main_window
-        self.theme_name = self.g.config.get('litegui_theme','dark')
+        self.theme_name = self.g.config.get('litegui_theme','Dark')
         self.themes = load_theme_paths()
         self.load_theme()
 
