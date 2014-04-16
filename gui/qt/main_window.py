@@ -475,7 +475,7 @@ class ElectrumWindow(QMainWindow):
         return int( p * Decimal(x) )
 
     def base_unit(self):
-        assert self.decimal_point in [5,8]
+        assert self.decimal_point in [11,8]
         return "Doge" if self.decimal_point == 8 else "MDoge"
 
 
@@ -2209,7 +2209,7 @@ class ElectrumWindow(QMainWindow):
 
         unit_result = units[unit_combo.currentIndex()]
         if self.base_unit() != unit_result:
-            self.decimal_point = 8 if unit_result == 'Doge' else 5
+            self.decimal_point = 8 if unit_result == 'Doge' else 11
             self.config.set_key('decimal_point', self.decimal_point, True)
             self.update_history_tab()
             self.update_status()
