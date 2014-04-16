@@ -46,6 +46,10 @@ data_files += [
         "data/sahara/name.cfg",
         "data/sahara/style.css"
     ]),
+    (os.path.join(appdata_dir, "minidoge"), [
+        "data/minidoge/name.cfg",
+        "data/minidoge/style.css"
+    ]),
     (os.path.join(appdata_dir, "dark"), [
         "data/dark/name.cfg",
         "data/dark/style.css"

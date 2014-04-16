@@ -650,7 +650,7 @@ class MiniActuator:
     def __init__(self, main_window):
         """Retrieve the gui theme used in previous session."""
         self.g = main_window
-        self.theme_name = self.g.config.get('litegui_theme','Dark')
+        self.theme_name = self.g.config.get('litegui_theme','MiniDoge')
         self.themes = load_theme_paths()
         self.load_theme()
 
