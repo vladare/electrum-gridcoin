@@ -301,19 +301,23 @@ def get_address_from_input_script(bytes):
     except Exception:
         # coinbase transactions raise an exception
         print_error("cannot find address in input script", bytes.encode('hex'))
-        return [], [], "(None)"
+        return [], {}, "(None)"
 
     # payto_pubkey
     match = [ opcodes.OP_PUSHDATA4 ]
     if match_decoded(decoded, match):
-        return None, None, "(pubkey)"
+        return None, {}, "(pubkey)"
 
     # non-generated TxIn transactions push a signature
     # (seventy-something bytes) and then their public key
     # (65 bytes) onto the stack:
     match = [ opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4 ]
     if match_decoded(decoded, match):
-        return None, None, public_key_to_bc_address(decoded[1][1])
+        sig = decoded[0][1].encode('hex')
+        assert sig[-2:] == '01'
+        sig = sig[:-2]
+        pubkey = decoded[1][1].encode('hex')
+        return [pubkey], {pubkey:sig}, public_key_to_bc_address(pubkey.decode('hex'))
 
     # p2sh transaction, 2 of n
     match = [ opcodes.OP_0 ]
@@ -341,7 +345,7 @@ def get_address_from_input_script(bytes):
             return pubkeys, signatures, hash_160_to_bc_address(hash_160(redeemScript), 5)
 
     print_error("cannot find address in input script", bytes.encode('hex'))
-    return [], [], "(None)"
+    return [], {}, "(None)"
 
 
 
@@ -384,7 +388,7 @@ class Transaction:
 
     @classmethod
     def from_io(klass, inputs, outputs):
-        raw = klass.serialize(inputs, outputs, for_sig = -1) # for_sig=-1 means do not sign
+        raw = klass.serialize(inputs, outputs, for_sig = None) # for_sig=-1 means do not sign
         self = klass(raw)
         self.inputs = inputs
         self.outputs = outputs
@@ -589,6 +593,7 @@ class Transaction:
             address = None
 
         d['address'] = address
+        d['pubkeys'] = pubkeys
         d['signatures'] = signatures
         return d
 
