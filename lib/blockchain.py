@@ -123,7 +123,7 @@ class Blockchain(threading.Thread):
                 bits, target = self.get_target(height/240, chain)
             else:
                 #Not sure about this:
-                bits, target = self.get_target(height + 1, chain)
+                bits, target = self.get_target(height, chain)
             _hash = self.pow_hash_header(header)
             try:
                 assert prev_hash == header.get('prev_block_hash')
@@ -282,13 +282,17 @@ class Blockchain(threading.Thread):
                         last = h
         elif digishield:
             try:
-                last = self.read_header(index-1)
+                last = self.read_header(index)
+            except Exception:
+                pass
+            try:
+                first = self.read_header(index-1)
             except Exception:
                 pass
             for h in chain:
-                if h.get('block_height') == index-1:
-                    last = h
                 if h.get('block_height') == index:
+                    last = h
+                if h.get('block_height') == index-1:
                     first = h
         else:
             if index == 1:
