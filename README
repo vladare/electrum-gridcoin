@@ -1,26 +1,27 @@
 Electrum-Doge - lightweight Dogecoin client
 
 Licence: GNU GPL v3
-Author: Thomas Voegtlin
+Electrum Author: Thomas Voegtlin
 Language: Python
-Homepage: http://electrum-doge.org/
+Electrum Homepage: http://electrum.org/
+
+Electrum-Doge Homepage: http://electrum-doge.org/
 
 
 1. GETTING STARTED
 ------------------
 
-To run Electrum from this directory, just do:
+To run Electrum-Doge from this directory, just do:
 
-  ./electrum
+  ./electrum-doge
 
 If you install Electrum on your system, you can run it from any
 directory:
 
   sudo python setup.py install
-  electrum-doge
 
-To start Electrum from your web browser, see
-http://electrum.org/bitcoin_URIs.html
+To start Electrum-Doge from your web browser, see
+http://electrum-doge.org/bitcoin_URIs.html
 
 
 
@@ -41,7 +42,3 @@ On Mac OS X:
 
   sudo hdiutil create -fs HFS+ -volname "Electrum-Doge" -srcfolder dist/Electrum-Doge.app dist/electrum-doge-VERSION-macosx.dmg
 
-
-== BROWSER CONFIGURATION ==
-
-See http://electrum-doge.org/bitcoin_URIs.html
