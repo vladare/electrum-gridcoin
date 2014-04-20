@@ -244,6 +244,8 @@ class InstallWizard(QDialog):
 
         b2 = QRadioButton(gb)
         b2.setText(_("Multi-signature wallet (two-factor authentication)"))
+        #disable until stable
+        b2.setEnabled(False)
 
         grid.addWidget(b1,1,0)
         grid.addWidget(b2,2,0)
