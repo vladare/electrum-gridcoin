@@ -33,7 +33,7 @@ class VersionGetter(threading.Thread):
         
     def run(self):
         try:
-            con = httplib.HTTPConnection('electrum-doge.org', 80, timeout=5)
+            con = httplib.HTTPSConnection('electrum-doge.org', 80, timeout=5)
             con.request("GET", "/version")
             res = con.getresponse()
         except socket.error as msg:
@@ -90,7 +90,7 @@ class UpdateLabel(QLabel):
         self.dialog.done(0)
   
     def open_website(self):
-        webbrowser.open("http://electrum-doge.org/download.html")
+        webbrowser.open("https://electrum-doge.org/download.html")
         self.dialog.done(0)
 
     def mouseReleaseEvent(self, event):
