@@ -121,6 +121,6 @@ setup(
     author="paybee",
     author_email="paybee@github",
     license="GNU GPLv3",
-    url="https://electrum-doge.org",
+    url="http://electrum-doge.org",
     long_description="""Lightweight Dogecoin Wallet"""
 )
