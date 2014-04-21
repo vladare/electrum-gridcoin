@@ -475,7 +475,7 @@ class ElectrumWindow(QMainWindow):
         return int( p * Decimal(x) )
 
     def base_unit(self):
-        assert self.decimal_point in [11,8]
+        assert self.decimal_point in [14,8]
         return "Doge" if self.decimal_point == 8 else "MDoge"
 
 
@@ -955,7 +955,7 @@ class ElectrumWindow(QMainWindow):
             return
 
         try:
-            if amount and self.base_unit() == 'MDoge': amount = str( Decimal(amount) / 1000)
+            if amount and self.base_unit() == 'MDoge': amount = str( Decimal(amount) / 1000000)
             elif amount: amount = str(Decimal(amount))
         except Exception:
             amount = "0.0"
@@ -2207,7 +2207,7 @@ class ElectrumWindow(QMainWindow):
         unit_combo.setCurrentIndex(units.index(self.base_unit()))
         grid.addWidget(unit_combo, 3, 1)
         grid.addWidget(HelpButton(_('Base unit of your wallet.')\
-                                             + '\n1000Doge=1MDoge.\n' \
+                                             + '\n1000000Doge=1MDoge.\n' \
                                              + _(' These settings affects the fields in the Send tab')+' '), 3, 2)
 
         usechange_cb = QCheckBox(_('Use change addresses'))
@@ -2255,7 +2255,7 @@ class ElectrumWindow(QMainWindow):
 
         unit_result = units[unit_combo.currentIndex()]
         if self.base_unit() != unit_result:
-            self.decimal_point = 8 if unit_result == 'Doge' else 11
+            self.decimal_point = 8 if unit_result == 'Doge' else 14
             self.config.set_key('decimal_point', self.decimal_point, True)
             self.update_history_tab()
             self.update_status()
