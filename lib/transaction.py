@@ -340,13 +340,13 @@ def get_address_from_input_script(bytes):
         match2 = [ opcodes.OP_2, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_2, opcodes.OP_CHECKMULTISIG ]
         if match_decoded(dec2, match2):
             pubkeys = [ dec2[1][1].encode('hex'), dec2[2][1].encode('hex') ]
-            return pubkeys, signatures, hash_160_to_bc_address(hash_160(redeemScript), 5)
+            return pubkeys, signatures, hash_160_to_bc_address(hash_160(redeemScript), 22)
  
         # 2 of 3
         match2 = [ opcodes.OP_2, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_PUSHDATA4, opcodes.OP_3, opcodes.OP_CHECKMULTISIG ]
         if match_decoded(dec2, match2):
             pubkeys = [ dec2[1][1].encode('hex'), dec2[2][1].encode('hex'), dec2[3][1].encode('hex') ]
-            return pubkeys, signatures, hash_160_to_bc_address(hash_160(redeemScript), 5)
+            return pubkeys, signatures, hash_160_to_bc_address(hash_160(redeemScript), 22)
 
     print_error("cannot find address in input script", bytes.encode('hex'))
     return [], {}, "(None)"
@@ -371,7 +371,7 @@ def get_address_from_output_script(bytes):
     # p2sh
     match = [ opcodes.OP_HASH160, opcodes.OP_PUSHDATA4, opcodes.OP_EQUAL ]
     if match_decoded(decoded, match):
-        return False, hash_160_to_bc_address(decoded[1][1],5)
+        return False, hash_160_to_bc_address(decoded[1][1],22)
 
     return False, "(None)"
 
