@@ -33,7 +33,7 @@ class VersionGetter(threading.Thread):
         
     def run(self):
         try:
-            con = httplib.HTTPSConnection('electrum-doge.org', 443, timeout=5)
+            con = httplib.HTTPConnection('electrum-doge.org', 80, timeout=5)
             con.request("GET", "/version")
             res = con.getresponse()
         except socket.error as msg:
