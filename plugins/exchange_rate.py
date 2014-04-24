@@ -342,6 +342,8 @@ class Plugin(BasePlugin):
         btcamount = Decimal(fiat) / Decimal(quote)
         if str(self.gui.main_window.base_unit()) == "MDoge":
             btcamount = btcamount / 1000000
+        if str(self.gui.main_window.base_unit()) == "KDoge":
+            btcamount = btcamount / 1000
         quote = "%.8f"%btcamount
         self.gui.main_window.amount_e.setText( quote )
 

@@ -475,8 +475,13 @@ class ElectrumWindow(QMainWindow):
         return int( p * Decimal(x) )
 
     def base_unit(self):
-        assert self.decimal_point in [14,8]
-        return "Doge" if self.decimal_point == 8 else "MDoge"
+        assert self.decimal_point in [14,11,8]
+        if self.decimal_point == 8:
+            return "Doge"
+        elif self.decimal_point == 11:
+            return "KDoge"
+        else:
+            return "MDoge"
 
 
     def update_status(self):
@@ -956,6 +961,7 @@ class ElectrumWindow(QMainWindow):
 
         try:
             if amount and self.base_unit() == 'MDoge': amount = str( Decimal(amount) / 1000000)
+            elif amount and self.base_unit() == 'KDoge': amount = str( Decimal(amount) / 1000)
             elif amount: amount = str(Decimal(amount))
         except Exception:
             amount = "0.0"
@@ -2199,7 +2205,7 @@ class ElectrumWindow(QMainWindow):
         if not self.config.is_modifiable('fee_per_kb'):
             for w in [fee_e, fee_label]: w.setEnabled(False)
 
-        units = ['Doge', 'MDoge']
+        units = ['Doge', 'KDoge', 'MDoge']
         unit_label = QLabel(_('Base unit') + ':')
         grid.addWidget(unit_label, 3, 0)
         unit_combo = QComboBox()
@@ -2207,6 +2213,7 @@ class ElectrumWindow(QMainWindow):
         unit_combo.setCurrentIndex(units.index(self.base_unit()))
         grid.addWidget(unit_combo, 3, 1)
         grid.addWidget(HelpButton(_('Base unit of your wallet.')\
+                                             + '\n1000Doge=1KDoge.' \
                                              + '\n1000000Doge=1MDoge.\n' \
                                              + _(' These settings affects the fields in the Send tab')+' '), 3, 2)
 
@@ -2255,7 +2262,12 @@ class ElectrumWindow(QMainWindow):
 
         unit_result = units[unit_combo.currentIndex()]
         if self.base_unit() != unit_result:
-            self.decimal_point = 8 if unit_result == 'Doge' else 14
+            if unit_result == 'Doge':
+                self.decimal_point = 8
+            elif unit_result == 'KDoge':
+                self.decimal_point = 11
+            elif unit_result == 'MDoge':
+                self.decimal_point = 14
             self.config.set_key('decimal_point', self.decimal_point, True)
             self.update_history_tab()
             self.update_status()
