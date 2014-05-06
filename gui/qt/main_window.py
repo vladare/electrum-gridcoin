@@ -380,7 +380,7 @@ class ElectrumWindow(QMainWindow):
 
     def show_report_bug(self):
         QMessageBox.information(self, "Electrum-Doge - " + _("Reporting Bugs"),
-            _("Please report any bugs as issues on github:")+" <a href=\"https://github.com/paybee/electrum-doge/issues\">https://github.com/paybee/electrum-doge/issues</a>")
+            _("Please report any bugs as issues on github:")+" <a href=\"https://github.com/vertpay/electrum-doge/issues\">https://github.com/vertpay/electrum-doge/issues</a>")
 
 
     def notify_transactions(self):

@@ -7,7 +7,7 @@ from blockchain import Blockchain
 DEFAULT_PORTS = {'t':'50001', 's':'50002', 'h':'8081', 'g':'8082'}
 
 DEFAULT_SERVERS = {
-    'electrum.payb.ee': DEFAULT_PORTS,
+    'electrum.vertpay.com': DEFAULT_PORTS,
     'nodealpha.electrum-doge.org': DEFAULT_PORTS,
 }
 

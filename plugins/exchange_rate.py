@@ -15,7 +15,7 @@ from electrum_doge_gui.qt.util import *
 from electrum_doge_gui.qt.amountedit import AmountEdit
 
 
-EXCHANGES = ["PayBee",
+EXCHANGES = ["VertPay",
              "Prelude"]
 
 
@@ -28,7 +28,7 @@ class Exchanger(threading.Thread):
         self.quote_currencies = None
         self.lock = threading.Lock()
         self.query_rates = threading.Event()
-        self.use_exchange = self.parent.config.get('use_exchange', "PayBee")
+        self.use_exchange = self.parent.config.get('use_exchange', "VertPay")
         self.parent.exchanges = EXCHANGES
         self.parent.currencies = ["EUR","GBP","USD"]
         self.parent.win.emit(SIGNAL("refresh_exchanges_combo()"))
@@ -64,9 +64,9 @@ class Exchanger(threading.Thread):
         self.is_running = False
 
     def update_rate(self):
-        self.use_exchange = self.parent.config.get('use_exchange', "PayBee")
+        self.use_exchange = self.parent.config.get('use_exchange', "VertPay")
         update_rates = {
-            "PayBee": self.update_pb,
+            "VertPay": self.update_pb,
             "Prelude": self.update_pl,
         }
         try:
@@ -106,7 +106,7 @@ class Exchanger(threading.Thread):
     def update_pb(self):
         quote_currencies = {}
         try:
-            jsonresp = self.get_json('api.payb.ee', "/rates/crypto.DOGE")
+            jsonresp = self.get_json('api.vertpay.com', "/rates/allrates")
         except Exception:
             return
         for cur in jsonresp:
@@ -129,13 +129,13 @@ class Plugin(BasePlugin):
         return "Exchange rates"
 
     def description(self):
-        return """exchange rates, retrieved from PayBee and other market exchanges"""
+        return """exchange rates, retrieved from VertPay and other market exchanges"""
 
 
     def __init__(self,a,b):
         BasePlugin.__init__(self,a,b)
         self.currencies = [self.config.get('currency', "EUR")]
-        self.exchanges = [self.config.get('use_exchange', "PayBee")]
+        self.exchanges = [self.config.get('use_exchange', "VertPay")]
 
     def init(self):
         self.win = self.gui.main_window
@@ -179,7 +179,7 @@ class Plugin(BasePlugin):
 
     def create_fiat_balance_text(self, btc_balance):
         quote_currency = self.config.get("currency", "EUR")
-        self.exchanger.use_exchange = self.config.get("use_exchange", "PayBee")
+        self.exchanger.use_exchange = self.config.get("use_exchange", "VertPay")
         cur_rate = self.exchanger.exchange(Decimal("1.0"), quote_currency)
         if cur_rate is None:
             quote_text = ""
@@ -239,7 +239,7 @@ class Plugin(BasePlugin):
 
         def on_change_ex(x):
             cur_request = str(self.exchanges[x])
-            if cur_request != self.config.get('use_exchange', "PayBee"):
+            if cur_request != self.config.get('use_exchange', "VertPay"):
                 self.config.set_key('use_exchange', cur_request, True)
                 self.currencies = []
                 combo.clear()
@@ -268,7 +268,7 @@ class Plugin(BasePlugin):
                 return
             combo_ex.addItems(self.exchanges)
             try:
-                index = self.exchanges.index(self.config.get('use_exchange', "PayBee"))
+                index = self.exchanges.index(self.config.get('use_exchange', "VertPay"))
             except Exception:
                 index = 0
             combo_ex.setCurrentIndex(index)

@@ -118,8 +118,8 @@ setup(
         'electrum_doge_plugins.virtualkeyboard',
     ],
     description="Lightweight Dogecoin Wallet",
-    author="paybee",
-    author_email="paybee@github",
+    author="vertpay",
+    author_email="dev@vertpay.com",
     license="GNU GPLv3",
     url="http://electrum-doge.org",
     long_description="""Lightweight Dogecoin Wallet"""
