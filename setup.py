@@ -80,6 +80,8 @@ setup(
         'electrum_doge.mnemonic',
         'electrum_doge.msqr',
         'electrum_doge.network',
+        'electrum_doge.paymentrequest',
+        'electrum_doge.paymentrequest_pb2',
         'electrum_doge.plugins',
         'electrum_doge.pyqrnative',
         'electrum_doge.scrypt',

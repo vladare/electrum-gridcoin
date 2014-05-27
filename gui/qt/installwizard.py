@@ -16,8 +16,10 @@ import threading
 from electrum_doge.plugins import run_hook
 
 
-MSG_ENTER_ANYTHING    = _("Please enter a wallet seed, a master public key, a list of Litecoin addresses, or a list of private keys")
+MSG_ENTER_ANYTHING    = _("Please enter a wallet seed, a master public key, a list of Dogecoin addresses, or a list of private keys")
+MSG_SHOW_MPK          = _("This is your master public key")
 MSG_ENTER_MPK         = _("Please enter your master public key")
+MSG_ENTER_COLD_MPK    = _("Please enter the master public key of your cosigning wallet")
 MSG_ENTER_SEED_OR_MPK = _("Please enter a wallet seed, or master public key")
 MSG_VERIFY_SEED       = _("Your seed is important!") + "\n" + _("To make sure that you have properly saved your seed, please retype it here.")
 
@@ -45,39 +47,109 @@ class InstallWizard(QDialog):
 
     def restore_or_create(self):
 
+        vbox = QVBoxLayout()
+
+        main_label = QLabel(_("Electrum could not find an existing wallet."))
+        vbox.addWidget(main_label)
+
         grid = QGridLayout()
         grid.setSpacing(5)
 
-        msg = _("Electrum could not find an existing wallet.") + "\n\n" \
-            + _("What do you want to do?") + "\n"
-        label = QLabel(msg)
+        label = QLabel(_("What do you want to do?"))
         label.setWordWrap(True)
         grid.addWidget(label, 0, 0)
 
-        gb = QGroupBox()
+        gb1 = QGroupBox()
+        grid.addWidget(gb1, 0, 0)
 
-        b1 = QRadioButton(gb)
+        group1 = QButtonGroup()
+
+        b1 = QRadioButton(gb1)
         b1.setText(_("Create new wallet"))
         b1.setChecked(True)
 
-        b2 = QRadioButton(gb)
+        b2 = QRadioButton(gb1)
         b2.setText(_("Restore an existing wallet"))
 
-        grid.addWidget(b1,1,0)
-        grid.addWidget(b2,2,0)
+        group1.addButton(b1)
+        group1.addButton(b2)
 
-        vbox = QVBoxLayout()
-        self.set_layout(vbox)
-
+        grid.addWidget(b1, 1, 0)
+        grid.addWidget(b2, 2, 0)
         vbox.addLayout(grid)
+
+        grid2 = QGridLayout()
+        grid2.setSpacing(5)
+
+        class ClickableLabel(QLabel):
+            def mouseReleaseEvent(self, ev):
+                self.emit(SIGNAL('clicked()'))
+
+        label2 = ClickableLabel(_("Wallet type:") + " [+]")
+        hbox = QHBoxLayout()
+        hbox.addWidget(label2)
+        grid2.addLayout(hbox, 3, 0)
+        
+        gb2 = QGroupBox()
+        grid.addWidget(gb2, 3, 0)
+
+        group2 = QButtonGroup()
+
+        bb1 = QRadioButton(gb2)
+        bb1.setText(_("Standard wallet"))
+        bb1.setChecked(True)
+
+        bb2 = QRadioButton(gb2)
+        bb2.setText(_("Wallet with two-factor authentication (plugin)"))
+
+        bb3 = QRadioButton(gb2)
+        bb3.setText(_("Multisig wallet (2 of 2)"))
+        bb3.setHidden(True)
+
+        bb4 = QRadioButton(gb2)
+        bb4.setText(_("Multisig wallet (2 of 3)"))
+        bb4.setHidden(True)
+
+        grid2.addWidget(bb1, 4, 0)
+        grid2.addWidget(bb2, 5, 0)
+        grid2.addWidget(bb3, 6, 0)
+        grid2.addWidget(bb4, 7, 0)
+
+        def toggle():
+            x = not bb3.isHidden()
+            label2.setText(_("Wallet type:") + (' [+]' if x else ' [-]'))
+            bb3.setHidden(x)
+            bb4.setHidden(x)
+ 
+        self.connect(label2, SIGNAL('clicked()'), toggle)
+
+        grid2.addWidget(label2)
+
+        group2.addButton(bb1)
+        group2.addButton(bb2)
+        group2.addButton(bb3)
+        group2.addButton(bb4)
+ 
+        vbox.addLayout(grid2)
         vbox.addStretch(1)
         vbox.addLayout(ok_cancel_buttons(self, _('Next')))
 
+        self.set_layout(vbox)
         if not self.exec_():
-            return
+            return None, None
         
-        return 'create' if b1.isChecked() else 'restore'
+        action = 'create' if b1.isChecked() else 'restore'
 
+        if bb1.isChecked():
+            t = 'standard'
+        elif bb2.isChecked():
+            t = '2fa'
+        elif bb3.isChecked():
+            t = '2of2'
+        elif bb4.isChecked():
+            t = '2of3'
+
+        return action, t
 
 
     def verify_seed(self, seed, sid):
@@ -98,9 +170,13 @@ class InstallWizard(QDialog):
         return text
 
 
-    def is_seed(self, seed_e):
+    def is_any(self, seed_e):
         text = self.get_seed_text(seed_e)
         return Wallet.is_seed(text) or Wallet.is_mpk(text) or Wallet.is_address(text) or Wallet.is_private_key(text)
+
+    def is_mpk(self, seed_e):
+        text = self.get_seed_text(seed_e)
+        return Wallet.is_mpk(text)
 
 
     def enter_seed_dialog(self, msg, sid):
@@ -109,30 +185,60 @@ class InstallWizard(QDialog):
         hbox, button = ok_cancel_buttons2(self, _('Next'))
         vbox.addLayout(hbox)
         button.setEnabled(False)
-        seed_e.textChanged.connect(lambda: button.setEnabled(self.is_seed(seed_e)))
+        seed_e.textChanged.connect(lambda: button.setEnabled(self.is_any(seed_e)))
         self.set_layout(vbox)
         if not self.exec_():
             return
         return self.get_seed_text(seed_e)
 
 
-    def double_seed_dialog(self):
+    def multi_mpk_dialog(self, xpub_hot, n):
         vbox = QVBoxLayout()
-        vbox1, seed_e1 = seed_dialog.enter_seed_box(MSG_ENTER_SEED_OR_MPK, 'hot')
-        vbox2, seed_e2 = seed_dialog.enter_seed_box(MSG_ENTER_SEED_OR_MPK, 'cold')
-        vbox.addLayout(vbox1)
-        vbox.addLayout(vbox2)
+        vbox0, seed_e0 = seed_dialog.enter_seed_box(MSG_SHOW_MPK, 'hot')
+        vbox.addLayout(vbox0)
+        seed_e0.setText(xpub_hot)
+        seed_e0.setReadOnly(True)
+        entries = []
+        for i in range(n):
+            vbox2, seed_e2 = seed_dialog.enter_seed_box(MSG_ENTER_COLD_MPK, 'cold')
+            vbox.addLayout(vbox2)
+            entries.append(seed_e2)
         vbox.addStretch(1)
         hbox, button = ok_cancel_buttons2(self, _('Next'))
         vbox.addLayout(hbox)
         button.setEnabled(False)
-        f = lambda: button.setEnabled(self.is_seed(seed_e1) and self.is_seed(seed_e2))
-        seed_e1.textChanged.connect(f)
-        seed_e2.textChanged.connect(f)
+        f = lambda: button.setEnabled( map(lambda e: self.is_mpk(e), entries) == [True]*len(entries))
+        for e in entries:
+            e.textChanged.connect(f)
+        self.set_layout(vbox)
+        if not self.exec_():
+            return
+        return map(lambda e: self.get_seed_text(e), entries)
+
+
+    def multi_seed_dialog(self, n):
+        vbox = QVBoxLayout()
+        vbox1, seed_e1 = seed_dialog.enter_seed_box(MSG_ENTER_SEED_OR_MPK, 'hot')
+        vbox.addLayout(vbox1)
+        entries = [seed_e1]
+        for i in range(n):
+            vbox2, seed_e2 = seed_dialog.enter_seed_box(MSG_ENTER_SEED_OR_MPK, 'cold')
+            vbox.addLayout(vbox2)
+            entries.append(seed_e2)
+        vbox.addStretch(1)
+        hbox, button = ok_cancel_buttons2(self, _('Next'))
+        vbox.addLayout(hbox)
+        button.setEnabled(False)
+
+        f = lambda: button.setEnabled( map(lambda e: self.is_any(e), entries) == [True]*len(entries))
+        for e in entries:
+            e.textChanged.connect(f)
+
         self.set_layout(vbox)
         if not self.exec_():
             return 
-        return self.get_seed_text(seed_e1), self.get_seed_text(seed_e2)
+        return map(lambda e: self.get_seed_text(e), entries)
+
 
 
 
@@ -246,121 +352,104 @@ class InstallWizard(QDialog):
         return run_password_dialog(self, None, self)[2]
 
 
-    def choose_wallet_type(self):
-        grid = QGridLayout()
-        grid.setSpacing(5)
-
-        msg = _("Choose your wallet.")
-        label = QLabel(msg)
-        label.setWordWrap(True)
-        grid.addWidget(label, 0, 0)
-
-        gb = QGroupBox()
-
-        b1 = QRadioButton(gb)
-        b1.setText(_("Standard wallet"))
-        b1.setChecked(True)
-
-        b2 = QRadioButton(gb)
-        b2.setText(_("Wallet with two-factor authentication (plugin)"))
-        b2.setEnabled(False)
-        #disable until stable
-
-        b3 = QRadioButton(gb)
-        b3.setText(_("Multisig wallet (paired manually)"))
-        b3.setEnabled(False)
-        #disable until stable
-
-        grid.addWidget(b1,1,0)
-        grid.addWidget(b2,2,0)
-        grid.addWidget(b3,3,0)
-
-        vbox = QVBoxLayout()
-
-        vbox.addLayout(grid)
-        vbox.addStretch(1)
-        vbox.addLayout(ok_cancel_buttons(self, _('Next')))
-
-        self.set_layout(vbox)
-        if not self.exec_():
+    def create_cold_seed(self, wallet):
+        from electrum_doge.bitcoin import mnemonic_to_seed, bip32_root
+        msg = _('You are about to generate the cold storage seed of your wallet.') + '\n' \
+              + _('For safety, you should do this on an offline computer.')
+        icon = QPixmap( ':icons/cold_seed.png').scaledToWidth(56)
+        if not self.question(msg, icon):
             return
-        
-        if b1.isChecked():
-            return 'standard'
-        elif b2.isChecked():
-            return 'multisig_plugin'
-        elif b3.isChecked():
-            return 'multisig_manual'
+
+        cold_seed = wallet.make_seed()
+        if not self.show_seed(cold_seed, 'cold'):
+            return
+        if not self.verify_seed(cold_seed, 'cold'):
+            return
+
+        hex_seed = mnemonic_to_seed(cold_seed,'').encode('hex')
+        xpriv, xpub = bip32_root(hex_seed)
+        wallet.add_master_public_key('cold/', xpub)
+
+        msg = _('Your master public key was saved in your wallet file.') + '\n'\
+              + _('Your cold seed must be stored on paper; it is not in the wallet file.')+ '\n\n' \
+              + _('This program is about to close itself.') + '\n'\
+              + _('You will need to reopen your wallet on an online computer, in order to complete the creation of your wallet')
+        self.show_message(msg)
+
 
 
     def run(self, action):
 
         if action == 'new':
-            action = self.restore_or_create()
+            action, t = self.restore_or_create()
 
         if action is None: 
             return
-
+            
         if action == 'create':
-            t = self.choose_wallet_type()
-            if not t:
-                return 
+            if t == 'standard':
+                wallet = Wallet(self.storage)
 
-            if t == 'multisig_plugin':
-                action = 'create_2of3_1'
-            if t == 'multisig_manual':
+            elif t == '2fa':
+                wallet = Wallet_2of3(self.storage)
+                run_hook('create_cold_seed', wallet, self)
+                self.create_cold_seed(wallet)
+                return
+
+            elif t == '2of2':
+                wallet = Wallet_2of2(self.storage)
                 action = 'create_2of2_1'
 
-        if action in ['create']:
-            wallet = Wallet(self.storage)
-        elif action in ['create_2of2_1','create_2of2_2']:
-            wallet = Wallet_2of2(self.storage)
+            elif t == '2of3':
+                wallet = Wallet_2of3(self.storage)
+                action = 'create_2of3_1'
 
 
-        if action == 'create':
+        if action in ['create_2fa_2', 'create_2of3_2']:
+            wallet = Wallet_2of3(self.storage)
+
+        if action in ['create', 'create_2of2_1', 'create_2fa_2', 'create_2of3_1']:
             seed = wallet.make_seed()
-            if not self.show_seed(seed, None):
+            sid = None if action == 'create' else 'hot'
+            if not self.show_seed(seed, sid):
                 return
-            if not self.verify_seed(seed, None):
+            if not self.verify_seed(seed, sid):
                 return
             password = self.password_dialog()
             wallet.add_seed(seed, password)
-            wallet.create_accounts(password)
-            self.waiting_dialog(wallet.synchronize)
-
-
-        if action == 'create_2of3_1':
-            run_hook('create_cold_seed', self.storage, self)
-            return
-
-
-        if action in ['create_2of2_1', 'create_2of3_2']:
-            msg = _('You are about to create the hot seed of a multisig wallet')
-            if not self.question(msg):
-                return
-            seed = wallet.make_seed()
-            if not self.show_seed(seed, 'hot'):
-                return
-            if not self.verify_seed(seed, 'hot'):
-                return
-            password = self.password_dialog()
-            wallet.add_seed(seed, password)
-            if action == 'create_2of2_1':
-                # display mpk
+            if action == 'create':
+                wallet.create_accounts(password)
+                self.waiting_dialog(wallet.synchronize)
+            elif action == 'create_2of2_1':
                 action = 'create_2of2_2'
-            else:
-                action = 'create_2of3_3'
+            elif action == 'create_2of3_1':
+                action = 'create_2of3_2'
+            elif action == 'create_2fa_2':
+                action = 'create_2fa_3'
 
         if action == 'create_2of2_2':
-            xpub = self.enter_seed_dialog(MSG_ENTER_MPK, 'cold')
-            if not Wallet.is_mpk(xpub):
+            xpub_hot = wallet.master_public_keys.get("m/")
+            xpub = self.multi_mpk_dialog(xpub_hot, 1)
+            if not xpub:
                 return
             wallet.add_master_public_key("cold/", xpub)
             wallet.create_account()
             self.waiting_dialog(wallet.synchronize)
 
 
-        if action == 'create_2of3_3':
+        if action == 'create_2of3_2':
+            xpub_hot = wallet.master_public_keys.get("m/")
+            r = self.multi_mpk_dialog(xpub_hot, 2)
+            if not r:
+                return
+            xpub1, xpub2 = r
+            wallet.add_master_public_key("cold/", xpub1)
+            wallet.add_master_public_key("remote/", xpub2)
+            wallet.create_account()
+            self.waiting_dialog(wallet.synchronize)
+
+
+        if action == 'create_2fa_3':
             run_hook('create_remote_key', wallet, self)
             if not wallet.master_public_keys.get("remote/"):
                 return
@@ -369,9 +458,6 @@ class InstallWizard(QDialog):
 
 
         if action == 'restore':
-            t = self.choose_wallet_type()
-            if not t: 
-                return
 
             if t == 'standard':
                 text = self.enter_seed_dialog(MSG_ENTER_ANYTHING, None)
@@ -391,15 +477,17 @@ class InstallWizard(QDialog):
                 else:
                     raise
 
-            elif t in ['multisig_plugin', 'multisig_manual']:
-                r = self.double_seed_dialog()
+            elif t in ['2fa', '2of2']:
+                r = self.multi_seed_dialog(1)
                 if not r: 
                     return
                 text1, text2 = r
                 password = self.password_dialog()
-                if t == 'multisig_manual':
+                if t == '2of2':
                     wallet = Wallet_2of2(self.storage)
-                else:
+                elif t == '2of3':
+                    wallet = Wallet_2of3(self.storage)
+                elif t == '2fa':
                     wallet = Wallet_2of3(self.storage)
 
                 if Wallet.is_seed(text1):
@@ -417,8 +505,33 @@ class InstallWizard(QDialog):
                         wallet.add_master_public_key("m/", text1)
                         wallet.add_master_public_key("cold/", text2)
 
-                if t == '2of3':
+                if t == '2fa':
                     run_hook('restore_third_key', wallet, self)
+
+                wallet.create_account()
+
+            elif t in ['2of3']:
+                r = self.multi_seed_dialog(2)
+                if not r: 
+                    return
+                text1, text2, text3 = r
+                password = self.password_dialog()
+                wallet = Wallet_2of3(self.storage)
+
+                if Wallet.is_seed(text1):
+                    wallet.add_seed(text1, password)
+                    if Wallet.is_seed(text2):
+                        wallet.add_cold_seed(text2, password)
+                    else:
+                        wallet.add_master_public_key("cold/", text2)
+
+                elif Wallet.is_mpk(text1):
+                    if Wallet.is_seed(text2):
+                        wallet.add_seed(text2, password)
+                        wallet.add_master_public_key("cold/", text1)
+                    else:
+                        wallet.add_master_public_key("m/", text1)
+                        wallet.add_master_public_key("cold/", text2)
 
                 wallet.create_account()
 

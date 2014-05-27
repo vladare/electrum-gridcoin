@@ -63,7 +63,7 @@ register_command('createmultisig',       2, 2, False, True,  False, 'similar to 
 register_command('createrawtransaction', 2, 2, False, True,  False, 'similar to dogecoind\'s command')
 register_command('deseed',               0, 0, False, True,  False, 'Remove seed from wallet, creating a seedless, watching-only wallet.')
 register_command('decoderawtransaction', 1, 1, False, False, False, 'similar to dogecoind\'s command')
-register_command('dumpprivkey',          1, 1, False, True,  True,  'Dumps a specified private key for a given address', 'dumpprivkey <dogecoin address>')
+register_command('getprivatekeys',       1, 1, False, True,  True,  'Get the private keys of a given address', 'getprivatekeys <dogecoin address>')
 register_command('dumpprivkeys',         0, 0, False, True,  True,  'dump all private keys')
 register_command('freeze',               1, 1, False, True,  True,  'Freeze the funds at one of your wallet\'s addresses', 'freeze <address>')
 register_command('getbalance',           0, 1, True,  True,  False, 'Return the balance of your wallet, or of one account in your wallet', 'getbalance [<account>]')
@@ -162,7 +162,9 @@ class Commands:
 
 
     def createrawtransaction(self, inputs, outputs):
-        inputs = map(lambda i: {'prevout_hash': i['txid'], 'prevout_n':i['vout']}, inputs )
+        for i in inputs:
+            i['prevout_hash'] = i['txid']
+            i['prevout_n'] = i['vout']
         outputs = map(lambda x: (x[0],int(1e8*x[1])), outputs.items())
         tx = Transaction.from_io(inputs, outputs)
         return tx
@@ -193,7 +195,7 @@ class Commands:
     def unfreeze(self,addr):
         return self.wallet.unfreeze(addr)
 
-    def dumpprivkey(self, addr):
+    def getprivatekeys(self, addr):
         return self.wallet.get_private_key(addr, self.password)
 
     def dumpprivkeys(self, addresses = None):

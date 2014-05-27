@@ -4,6 +4,32 @@ from PyQt4.QtCore import *
 import os.path
 import time
 
+import threading
+
+class WaitingDialog(QThread):
+    def __init__(self, parent, message, run_task, on_complete=None):
+        QThread.__init__(self)
+        self.parent = parent
+        self.d = QDialog(parent)
+        self.d.setWindowTitle('Please wait')
+        l = QLabel(message)
+        vbox = QVBoxLayout(self.d)
+        vbox.addWidget(l)
+        self.run_task = run_task
+        self.on_complete = on_complete
+        self.d.connect(self.d, SIGNAL('done'), self.close)
+        self.d.show()
+
+    def run(self):
+        self.result = self.run_task()
+        self.d.emit(SIGNAL('done'))
+
+    def close(self):
+        self.d.accept()
+        if self.on_complete:
+            self.on_complete(*self.result)
+
+
 
 class Timer(QThread):
     def run(self):
@@ -78,6 +104,68 @@ def text_dialog(parent, title, label, ok_label, default=None):
         return unicode(txt.toPlainText())
 
 
+
+def address_field(addresses):
+    hbox = QHBoxLayout()
+    address_e = QLineEdit()
+    if addresses:
+        address_e.setText(addresses[0])
+    def func():
+        i = addresses.index(str(address_e.text())) + 1
+        i = i % len(addresses)
+        address_e.setText(addresses[i])
+    button = QPushButton(_('Address'))
+    button.clicked.connect(func)
+    hbox.addWidget(button)
+    hbox.addWidget(address_e)
+    return hbox, address_e
+
+
+def filename_field(parent, config, defaultname, select_msg):
+
+    vbox = QVBoxLayout()
+    vbox.addWidget(QLabel(_("Format")))
+    gb = QGroupBox("format", parent)
+    b1 = QRadioButton(gb)
+    b1.setText(_("CSV"))
+    b1.setChecked(True)
+    b2 = QRadioButton(gb)
+    b2.setText(_("json"))
+    vbox.addWidget(b1)
+    vbox.addWidget(b2)
+        
+    hbox = QHBoxLayout()
+
+    directory = config.get('io_dir', unicode(os.path.expanduser('~')))
+    path = os.path.join( directory, defaultname )
+    filename_e = QLineEdit()
+    filename_e.setText(path)
+
+    def func():
+        text = unicode(filename_e.text())
+        _filter = "*.csv" if text.endswith(".csv") else "*.json" if text.endswith(".json") else None
+        p = unicode( QFileDialog.getSaveFileName(None, select_msg, text, _filter))
+        if p:
+            filename_e.setText(p)
+
+    button = QPushButton(_('File'))
+    button.clicked.connect(func)
+    hbox.addWidget(button)
+    hbox.addWidget(filename_e)
+    vbox.addLayout(hbox)
+
+    def set_csv(v):
+        text = unicode(filename_e.text())
+        text = text.replace(".json",".csv") if v else text.replace(".csv",".json")
+        filename_e.setText(text)
+
+    b1.clicked.connect(lambda: set_csv(True))
+    b2.clicked.connect(lambda: set_csv(False))
+
+    return vbox, filename_e, b1
+
+
+
 class MyTreeWidget(QTreeWidget):
     def __init__(self, parent):
         QTreeWidget.__init__(self, parent)
@@ -96,3 +184,11 @@ class MyTreeWidget(QTreeWidget):
                 break
         self.emit(SIGNAL('customContextMenuRequested(const QPoint&)'), QPoint(50, i*5 + j - 1))
 
+
+
+
+if __name__ == "__main__":
+    app = QApplication([])
+    t = WaitingDialog(None, 'testing ...', lambda: [time.sleep(1)], lambda x: QMessageBox.information(None, 'done', "done", _('OK')))
+    t.start()
+    app.exec_()
