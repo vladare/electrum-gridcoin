@@ -18,7 +18,7 @@
 
 import sys, time, datetime, re, threading
 from electrum_doge.i18n import _, set_language
-from electrum_doge.util import print_error, print_msg, parse_url
+from electrum_doge.util import print_error, print_msg
 from electrum_doge.plugins import run_hook
 import os.path, json, ast, traceback
 import shutil
@@ -71,7 +71,6 @@ class ElectrumGui:
             self.app = QApplication(sys.argv)
         self.app.installEventFilter(self.efilter)
         init_plugins(self)
-        self.payment_request = None
 
 
     def build_tray_menu(self):
@@ -128,8 +127,6 @@ class ElectrumGui:
                 self.config.set_key('lite_mode', False, True)
                 sys.exit(0)
             self.lite_window = None
-            self.main_window.show()
-            self.main_window.raise_()
             return
 
         actuator = lite_window.MiniActuator(self.main_window)
@@ -137,10 +134,6 @@ class ElectrumGui:
         self.lite_window = lite_window.MiniWindow(actuator, self.go_full, self.config)
         driver = lite_window.MiniDriver(self.main_window, self.lite_window)
 
-        if self.config.get('lite_mode') is True:
-            self.go_lite()
-        else:
-            self.go_full()
 
 
     def check_qt_version(self):
@@ -148,52 +141,8 @@ class ElectrumGui:
         return int(qtVersion[0]) >= 4 and int(qtVersion[2]) >= 7
 
 
-    def set_url(self, url):
-        from electrum import util
-        from decimal import Decimal
-
-        try:
-            address, amount, label, message, request_url, url = util.parse_url(url)
-        except Exception:
-            QMessageBox.warning(self.main_window, _('Error'), _('Invalid dogecoin URL'), _('OK'))
-            return
-
-        try:
-            if amount and self.main_window.base_unit() == 'MDoge': 
-                amount = str(Decimal(amount)/1000000)
-            if amount and self.main_window.base_unit() == 'KDoge': 
-                amount = str(Decimal(amount)/1000)
-            elif amount: 
-                amount = str(Decimal(amount))
-        except Exception:
-            amount = "0.0"
-            QMessageBox.warning(self.main_window, _('Error'), _('Invalid Amount'), _('OK'))
-
-            
-
-        if request_url:
-            try:
-                from electrum import paymentrequest
-            except:
-                print "cannot import paymentrequest"
-                request_url = None
-
-        if not request_url:
-            self.main_window.set_send(address, amount, label, message)
-
-        if self.lite_window:
-            self.lite_window.set_payment_fields(address, amount)
-            return
-
-        def payment_request():
-            self.payment_request = paymentrequest.PaymentRequest(request_url)
-            if self.payment_request.verify():
-                self.main_window.emit(SIGNAL('payment_request_ok'))
-            else:
-                self.main_window.emit(SIGNAL('payment_request_error'))
-
-        threading.Thread(target=payment_request).start()
-        self.main_window.prepare_for_payment_request()
+    def set_url(self, uri):
+        self.current_window.pay_from_URI(uri)
 
 
     def main(self, url):
@@ -229,6 +178,16 @@ class ElectrumGui:
 
         #lite window
         self.init_lite()
+
+        # initial configuration
+        if self.config.get('hide_gui') is True and self.tray.isVisible():
+            self.main_window.hide()
+            self.lite_window.hide()
+        else:
+            if self.config.get('lite_mode') is True:
+                self.go_lite()
+            else:
+                self.go_full()
 
         # plugins that need to change the GUI do it here
         run_hook('init')

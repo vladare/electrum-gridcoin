@@ -6,8 +6,7 @@ include electrum-doge
 recursive-include lib *.py
 recursive-include gui *.py
 recursive-include plugins *.py
-recursive-include ecdsa *.py
-recursive-include aes *.py
+recursive-include packages *.py
 include app.fil
 include icons.qrc
 recursive-include icons *

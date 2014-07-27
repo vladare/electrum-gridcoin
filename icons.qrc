@@ -23,5 +23,6 @@
     <file>icons/network.png</file>
     <file>icons/dark_background.png</file>
     <file>icons/light_background.png</file>
+    <file>icons/qrcode.png</file>
   </qresource>
 </RCC>
