@@ -36,15 +36,6 @@ proxy_modes = ['socks4', 'socks5', 'http']
 import util
 
 
-def cert_verify_hostname(s):
-    # hostname verification (disabled)
-    from backports.ssl_match_hostname import match_hostname, CertificateError
-    try:
-        match_hostname(s.getpeercert(True), host)
-        print_error("hostname matches", host)
-    except CertificateError, ce:
-        print_error("hostname did not match", host)
-
 
 
 def Interface(server, config = None):
@@ -91,10 +82,6 @@ class TcpInterface(threading.Thread):
         error = response.get('error')
         result = response.get('result')
 
-        if error:
-            print_error("received error:", response)
-            return
-        
         if msg_id is not None:
             with self.lock:
                 method, params, _id, queue = self.unanswered_requests.pop(msg_id)
@@ -123,10 +110,13 @@ class TcpInterface(threading.Thread):
             self.is_ping = False
             return
 
-        queue.put((self, {'method':method, 'params':params, 'result':result, 'id':_id}))
+        if error:
+            queue.put((self, {'method':method, 'params':params, 'error':error, 'id':_id}))
+        else:
+            queue.put((self, {'method':method, 'params':params, 'result':result, 'id':_id}))
 
 
-    def start_tcp(self):
+    def get_socket(self):
 
         if self.proxy is not None:
             socks.setdefaultproxy(self.proxy_mode, self.proxy["host"], int(self.proxy["port"]))
@@ -155,6 +145,15 @@ class TcpInterface(threading.Thread):
                     except:
                         s = None
                         continue
+
+                    # first try with ca
+                    try:
+                        ca_certs = os.path.join(self.config.path, 'ca', 'ca-bundle.crt')
+                        s = ssl.wrap_socket(s, ssl_version=ssl.PROTOCOL_SSLv3, cert_reqs=ssl.CERT_REQUIRED, ca_certs=ca_certs, do_handshake_on_connect=True)
+                        print_error("SSL with ca:", self.host)
+                        return s
+                    except ssl.SSLError, e:
+                        pass
 
                     try:
                         s = ssl.wrap_socket(s, ssl_version=ssl.PROTOCOL_SSLv3, cert_reqs=ssl.CERT_NONE, ca_certs=None)
@@ -244,11 +243,7 @@ class TcpInterface(threading.Thread):
                 print_error("saving certificate for", self.host)
                 os.rename(temporary_path, cert_path)
 
-        s.settimeout(60)
-        self.s = s
-        self.is_connected = True
-        print_error("connected to", self.host, self.port)
-        self.pipe = util.SocketPipe(s)
+        return s
         
 
     def send_request(self, request, queue=None):
@@ -257,15 +252,16 @@ class TcpInterface(threading.Thread):
         params = request.get('params')
         with self.lock:
             try:
-                self.pipe.send({'id':self.message_id, 'method':method, 'params':params})
+                r = {'id':self.message_id, 'method':method, 'params':params}
+                self.pipe.send(r)
+                if self.debug:
+                    print_error("-->", r)
             except socket.error, e:
                 print_error("socked error:", self.server, e)
                 self.is_connected = False
                 return
             self.unanswered_requests[self.message_id] = method, params, _id, queue
             self.message_id += 1
-        if self.debug:
-            print_error("-->", request)
 
     def parse_proxy_options(self, s):
         if type(s) == type({}): return s  # fixme: type should be fixed
@@ -297,7 +293,13 @@ class TcpInterface(threading.Thread):
         threading.Thread.start(self)
 
     def run(self):
-        self.start_tcp()
+        self.s = self.get_socket()
+        if self.s:
+            self.s.settimeout(60)
+            self.is_connected = True
+            print_error("connected to", self.host, self.port)
+            self.pipe = util.SocketPipe(self.s)
+
         self.change_status()
         if not self.is_connected:
             return

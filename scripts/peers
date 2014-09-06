@@ -8,11 +8,11 @@ from collections import defaultdict
 # electrum.util.set_verbosity(1)
 
 # 1. start interface and wait for connection
-interface = electrum.Interface('electrum-ltc.bysh.me:50002:s')
+interface = electrum.Interface('electrum-doge.thwg.org:50002:s')
 q = Queue.Queue()
 interface.start(q)
 
-i, r = q.get(timeout=10000)
+i, r = q.get()
 if not interface.is_connected:
     print "not connected"
     exit(1)
@@ -87,11 +87,22 @@ for i in reached_servers:
     i.send_request({'method':'blockchain.headers.subscribe','params':[]}, results_queue)
 
 results = {}
+t0 = time.time()
 while reached_servers:
-    i, r = results_queue.get(timeout=10000)
+    try:
+        i, r = results_queue.get(timeout=1)
+    except:
+        if time.time() - t0 > 10:
+            break
+        else:
+            continue
     results[i.server] = r.get('result')
     reached_servers.remove(i)
     i.stop()
+
+for i in reached_servers:
+    print i.server, "did not answer"
+print "%d answers"%len(results)
 
 errors = analyze(results).keys()
 

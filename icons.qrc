@@ -24,5 +24,6 @@
     <file>icons/dark_background.png</file>
     <file>icons/light_background.png</file>
     <file>icons/qrcode.png</file>
+    <file>icons/trustedcoin.png</file>
   </qresource>
 </RCC>

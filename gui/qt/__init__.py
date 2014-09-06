@@ -22,7 +22,7 @@ from electrum_doge.util import print_error, print_msg
 from electrum_doge.plugins import run_hook
 import os.path, json, ast, traceback
 import shutil
-
+import signal
 
 try:
     import PyQt4
@@ -44,7 +44,6 @@ except Exception:
 
 from util import *
 from main_window import ElectrumWindow
-from electrum_doge.plugins import init_plugins
 
 
 class OpenFileEventFilter(QObject):
@@ -70,7 +69,6 @@ class ElectrumGui:
         if app is None:
             self.app = QApplication(sys.argv)
         self.app.installEventFilter(self.efilter)
-        init_plugins(self)
 
 
     def build_tray_menu(self):
@@ -193,7 +191,7 @@ class ElectrumGui:
                 self.go_full()
 
         # plugins that need to change the GUI do it here
-        run_hook('init')
+        run_hook('init_qt', self)
 
         w.load_wallet(wallet)
 
@@ -208,6 +206,7 @@ class ElectrumGui:
         w.connect_slots(s)
         w.update_wallet()
 
+        signal.signal(signal.SIGINT, lambda *args: self.app.quit())
         self.app.exec_()
         if self.tray:
             self.tray.hide()

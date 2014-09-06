@@ -4,6 +4,7 @@ include electrum-doge.desktop
 include *.py
 include electrum-doge
 recursive-include lib *.py
+recursive-include lib/wordlist *
 recursive-include gui *.py
 recursive-include plugins *.py
 recursive-include packages *.py
