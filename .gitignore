@@ -12,3 +12,4 @@ Electrum_Doge.egg-info/
 gui/qt/icons_rc.py
 locale/
 .devlocaltmp/
+*_trial_temp

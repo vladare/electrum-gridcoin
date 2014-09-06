@@ -308,10 +308,14 @@ class MiniWindow(QDialog):
         self.actuator.g.closeEvent(event)
         qApp.quit()
 
-    def set_payment_fields(self, dest_address, amount):
+    def pay_from_URI(self, URI):
+        try:
+            dest_address, amount, label, message, request_url = util.parse_URI(URI)
+        except:
+            return
         self.address_input.setText(dest_address)
         self.address_field_changed(dest_address)
-        self.amount_input.setText(amount)
+        self.amount_input.setText(str(amount))
 
     def activate(self):
         pass
@@ -720,7 +724,7 @@ class MiniActuator:
             QMessageBox.warning(parent_window, _('Error'), str(error), _('OK'))
             return False
 
-        if tx.is_complete:
+        if tx.is_complete():
             h = self.g.wallet.send_tx(tx)
 
             self.waiting_dialog(lambda: False if self.g.wallet.tx_event.isSet() else _("Sending transaction, please wait..."))
@@ -789,8 +793,7 @@ class MiniDriver(QObject):
 
         if self.network:
             self.network.register_callback('updated',self.update_callback)
-            self.network.register_callback('connected', self.update_callback)
-            self.network.register_callback('disconnected', self.update_callback)
+            self.network.register_callback('status', self.update_callback)
 
         self.state = None
 
@@ -807,9 +810,9 @@ class MiniDriver(QObject):
     def update(self):
         if not self.network:
             self.initializing()
-        elif not self.network.interface:
-            self.initializing()
-        elif not self.network.interface.is_connected:
+        #elif not self.network.interface:
+        #    self.initializing()
+        elif not self.network.is_connected():
             self.connecting()
 
         if self.g.wallet is None:

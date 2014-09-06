@@ -56,11 +56,13 @@ data_files += [
     ])
 ]
 
+# replace tlslite because of https://github.com/trevp/tlslite/issues/15
+os.system("pip install http://download.electrum.org/tlslite-0.4.5.tar.gz")
 
 setup(
     name="Electrum-Doge",
     version=version.ELECTRUM_VERSION,
-    install_requires=['slowaes', 'ecdsa>=0.9', 'ltc_scrypt'],
+    install_requires=['slowaes', 'ecdsa>=0.9', 'pbkdf2', 'requests', 'pyasn1', 'pyasn1-modules', 'qrcode', 'ltc_scrypt'],
     package_dir={
         'electrum_doge': 'lib',
         'electrum_doge_gui': 'gui',
@@ -80,8 +82,10 @@ setup(
         'electrum_doge.mnemonic',
         'electrum_doge.msqr',
         'electrum_doge.network',
+        'electrum_doge.network_proxy',
+        'electrum_doge.paymentrequest',
+        'electrum_doge.paymentrequest_pb2',
         'electrum_doge.plugins',
-        'electrum_doge.pyqrnative',
         'electrum_doge.scrypt',
         'electrum_doge.simple_config',
         'electrum_doge.socks',
@@ -92,6 +96,7 @@ setup(
         'electrum_doge.version',
         'electrum_doge.wallet',
         'electrum_doge.wallet_bitkey',
+        'electrum_doge.x509',
         'electrum_doge_gui.gtk',
         'electrum_doge_gui.qt.__init__',
         'electrum_doge_gui.qt.amountedit',
@@ -103,7 +108,9 @@ setup(
         'electrum_doge_gui.qt.main_window',
         'electrum_doge_gui.qt.network_dialog',
         'electrum_doge_gui.qt.password_dialog',
+        'electrum_doge_gui.qt.paytoedit',
         'electrum_doge_gui.qt.qrcodewidget',
+        'electrum_doge_gui.qt.qrtextedit',
         'electrum_doge_gui.qt.receiving_widget',
         'electrum_doge_gui.qt.seed_dialog',
         'electrum_doge_gui.qt.transaction_dialog',

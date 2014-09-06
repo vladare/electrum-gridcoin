@@ -18,11 +18,11 @@
 
 import sys, time, datetime, re, threading
 from electrum_doge.i18n import _, set_language
-from electrum_doge.util import print_error, print_msg, parse_url
+from electrum_doge.util import print_error, print_msg
 from electrum_doge.plugins import run_hook
 import os.path, json, ast, traceback
 import shutil
-
+import signal
 
 try:
     import PyQt4
@@ -44,7 +44,6 @@ except Exception:
 
 from util import *
 from main_window import ElectrumWindow
-from electrum_doge.plugins import init_plugins
 
 
 class OpenFileEventFilter(QObject):
@@ -70,7 +69,6 @@ class ElectrumGui:
         if app is None:
             self.app = QApplication(sys.argv)
         self.app.installEventFilter(self.efilter)
-        init_plugins(self)
 
 
     def build_tray_menu(self):
@@ -127,8 +125,6 @@ class ElectrumGui:
                 self.config.set_key('lite_mode', False, True)
                 sys.exit(0)
             self.lite_window = None
-            self.main_window.show()
-            self.main_window.raise_()
             return
 
         actuator = lite_window.MiniActuator(self.main_window)
@@ -136,10 +132,6 @@ class ElectrumGui:
         self.lite_window = lite_window.MiniWindow(actuator, self.go_full, self.config)
         driver = lite_window.MiniDriver(self.main_window, self.lite_window)
 
-        if self.config.get('lite_mode') is True:
-            self.go_lite()
-        else:
-            self.go_full()
 
 
     def check_qt_version(self):
@@ -147,30 +139,8 @@ class ElectrumGui:
         return int(qtVersion[0]) >= 4 and int(qtVersion[2]) >= 7
 
 
-    def set_url(self, url):
-        from electrum import util
-        from decimal import Decimal
-        try:
-            address, amount, label, message, url = util.parse_url(url)
-        except Exception:
-            QMessageBox.warning(self.main_window, _('Error'), _('Invalid dogecoin URL'), _('OK'))
-            return
-
-        try:
-            if amount and self.main_window.base_unit() == 'MDoge': 
-                amount = str(Decimal(amount)/1000000)
-            if amount and self.main_window.base_unit() == 'KDoge': 
-                amount = str(Decimal(amount)/1000)
-            elif amount: 
-                amount = str(Decimal(amount))
-        except Exception:
-            amount = "0.0"
-            QMessageBox.warning(self.main_window, _('Error'), _('Invalid Amount'), _('OK'))
-
-            
-        self.main_window.set_send(address, amount, label, message)
-        if self.lite_window:
-            self.lite_window.set_payment_fields(address, amount)
+    def set_url(self, uri):
+        self.current_window.pay_from_URI(uri)
 
 
     def main(self, url):
@@ -187,18 +157,21 @@ class ElectrumGui:
             wizard = installwizard.InstallWizard(self.config, self.network, storage)
             wallet = wizard.run(action)
             if not wallet: 
-                exit()
+                return
         else:
             wallet.start_threads(self.network)
 
         # init tray
-        self.dark_icon = self.config.get("dark_icon", False)
-        icon = QIcon(":icons/electrum_dark_icon.png") if self.dark_icon else QIcon(':icons/electrum_light_icon.png')
-        self.tray = QSystemTrayIcon(icon, None)
-        self.tray.setToolTip('Electrum-Doge')
-        self.tray.activated.connect(self.tray_activated)
-        self.build_tray_menu()
-        self.tray.show()
+        if 1:
+            self.dark_icon = self.config.get("dark_icon", False)
+            icon = QIcon(":icons/electrum_dark_icon.png") if self.dark_icon else QIcon(':icons/electrum_light_icon.png')
+            self.tray = QSystemTrayIcon(icon, None)
+            self.tray.setToolTip('Electrum-Doge')
+            self.tray.activated.connect(self.tray_activated)
+            self.build_tray_menu()
+            self.tray.show()
+        else:
+            self.tray = None
 
         # main window
         self.main_window = w = ElectrumWindow(self.config, self.network, self)
@@ -207,8 +180,18 @@ class ElectrumGui:
         #lite window
         self.init_lite()
 
+        # initial configuration
+        if self.config.get('hide_gui') is True and self.tray.isVisible():
+            self.main_window.hide()
+            self.lite_window.hide()
+        else:
+            if self.config.get('lite_mode') is True:
+                self.go_lite()
+            else:
+                self.go_full()
+
         # plugins that need to change the GUI do it here
-        run_hook('init')
+        run_hook('init_qt', self)
 
         w.load_wallet(wallet)
 
@@ -223,7 +206,15 @@ class ElectrumGui:
         w.connect_slots(s)
         w.update_wallet()
 
+        signal.signal(signal.SIGINT, lambda *args: self.app.quit())
         self.app.exec_()
+        if self.tray:
+            self.tray.hide()
+
+        # clipboard persistence
+        # see http://www.mail-archive.com/pyqt@riverbankcomputing.com/msg17328.html
+        event = QtCore.QEvent(QtCore.QEvent.Clipboard)
+        self.app.sendEvent(self.app.clipboard(), event)
 
         wallet.stop_threads()
 
