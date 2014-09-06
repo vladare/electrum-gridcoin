@@ -291,7 +291,7 @@ def PrivKeyToSecret(privkey):
     return privkey[9:9+32]
 
 
-def SecretToASecret(secret, compressed=False, addrtype=48):
+def SecretToASecret(secret, compressed=False, addrtype=30):
     vchIn = chr((addrtype+128)&255) + secret
     if compressed: vchIn += '\01'
     return EncodeBase58Check(vchIn)

@@ -355,7 +355,9 @@ class Abstract_Wallet(object):
         return self.accounts[account_id].get_pubkeys(*sequence)
 
     def add_keypairs(self, tx, keypairs, password):
-        # first check the provided password. This will raise if invalid.
+
+        if self.is_watching_only():
+            return
         self.check_password(password)
 
         addr_list, xpub_list = tx.inputs_to_sign()
@@ -791,7 +793,7 @@ class Abstract_Wallet(object):
         self.network.send([('blockchain.transaction.broadcast', [str(tx)])], self.on_broadcast)
         return tx.hash()
 
-    def on_broadcast(self, i, r):
+    def on_broadcast(self, r):
         self.tx_result = r.get('result')
         self.tx_event.set()
 
@@ -987,6 +989,8 @@ class Abstract_Wallet(object):
                 age = tx_age
         return age > age_limit
 
+    def can_sign(self, tx):
+        pass
 
 class Imported_Wallet(Abstract_Wallet):
 
@@ -1364,19 +1368,28 @@ class NewWallet(Deterministic_Wallet):
         account = BIP32_Account({'xpub':xpub})
         return account
 
-    def make_seed(self):
-        import mnemonic, ecdsa
-        entropy = ecdsa.util.randrange( pow(2,160) )
+
+    @classmethod
+    def make_seed(self, custom_entropy=1):
+        import mnemonic
+        import ecdsa
+        import math
+        n = int(math.ceil(math.log(custom_entropy,2)))
+        n_added = max(16, 160-n)
+        print_error("make_seed: adding %d bits"%n_added)
+        my_entropy = ecdsa.util.randrange( pow(2, n_added) )
         nonce = 0
         while True:
-            ss = "%040x"%(entropy+nonce)
-            s = hashlib.sha256(ss.decode('hex')).digest().encode('hex')
-            # we keep only 13 words, that's approximately 139 bits of entropy
-            words = mnemonic.mn_encode(s)[0:13]
+            s = "%x"% ( custom_entropy * (my_entropy + nonce))
+            if len(s) % 8:
+                s = "0"* (8 - len(s) % 8) + s
+            words = mnemonic.mn_encode(s)
             seed = ' '.join(words)
-            if is_new_seed(seed):
-                break  # this will remove 8 bits of entropy
+            # this removes 8 bits of entropy
+            if not is_old_seed(seed) and is_new_seed(seed):
+                break
             nonce += 1
+        print_error(seed)
         return seed
 
     def prepare_seed(self, seed):
@@ -1533,7 +1546,10 @@ class OldWallet(Deterministic_Wallet):
             if self.is_mine(addr):
                 return True
         for xpub, sequence in xpub_list:
-            if xpub == self.master_public_key:
+            try:
+                if xpub == self.master_public_key:
+                    return True
+            except Exception:
                 return True
         return False
 
