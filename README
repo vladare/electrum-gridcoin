@@ -1,28 +1,28 @@
-Electrum-Doge - lightweight Dogecoin client
+Electrum-Gridcoin - lightweight Dogecoin client
 
 Licence: GNU GPL v3
 Electrum Author: Thomas Voegtlin
-Electrum-Doge Contributors: Riccardo Spagni, Michael Wozniak
+Electrum-Gridcoin Contributors: 
 Language: Python
 Electrum Homepage: http://electrum.org/
 
-Electrum-Doge Homepage: http://electrum-doge.org/
+Electrum-Doge Homepage: 
 
 
 1. GETTING STARTED
 ------------------
 
-To run Electrum-Doge from this directory, just do:
+To run Electrum-Gridcoin from this directory, just do:
 
-  ./electrum-doge
+  ./electrum-gridcoin
 
 If you install Electrum on your system, you can run it from any
 directory:
 
   sudo python setup.py install
 
-To start Electrum-Doge from your web browser, see
-http://electrum-doge.org/bitcoin_URIs.html
+To start Electrum-Gridcoin from your web browser, see
+
 
 
 
@@ -41,5 +41,5 @@ On Mac OS X:
   # On brew installs
   ARCHFLAGS="-arch i386 -arch x86_64" sudo python setup-release.py py2app --includes sip
 
-  sudo hdiutil create -fs HFS+ -volname "Electrum-Doge" -srcfolder dist/Electrum-Doge.app dist/electrum-doge-VERSION-macosx.dmg
+  sudo hdiutil create -fs HFS+ -volname "Electrum-Gridcoin" -srcfolder dist/Electrum-Gridcoin.app dist/electrum-gridcoin-VERSION-macosx.dmg
 
